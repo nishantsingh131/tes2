@@ -1,0 +1,116 @@
+{
+    "title": "UPSC Full-Length Mock 01",
+    "duration_minutes": 120,
+    "questions": [
+        {
+            "q": "The Preamble to the Constitution is based on which resolution?",
+            "options": [
+                "Objectives Resolution",
+                "Cabinet Mission",
+                "August Offer",
+                "Government of India Act"
+            ],
+            "answer": 0,
+            "topic": "Polity"
+        },
+        {
+            "q": "The Directive Principles are in which Part?",
+            "options": [
+                "Part II",
+                "Part III",
+                "Part IV",
+                "Part V"
+            ],
+            "answer": 2,
+            "topic": "Polity"
+        },
+        {
+            "q": "The Harappan civilisation is known for:",
+            "options": [
+                "Iron tools",
+                "Urban planning",
+                "Temple pyramids",
+                "Feudal system"
+            ],
+            "answer": 1,
+            "topic": "History"
+        },
+        {
+            "q": "Black soil is especially suitable for:",
+            "options": [
+                "Rice",
+                "Cotton",
+                "Tea",
+                "Jute"
+            ],
+            "answer": 1,
+            "topic": "Geography"
+        },
+        {
+            "q": "Repo rate is decided by:",
+            "options": [
+                "SEBI",
+                "RBI",
+                "NITI Aayog",
+                "Finance Commission"
+            ],
+            "answer": 1,
+            "topic": "Economy"
+        },
+        {
+            "q": "Biodiversity hotspot in India includes:",
+            "options": [
+                "Western Ghats",
+                "Thar only",
+                "Punjab plains",
+                "Deccan only"
+            ],
+            "answer": 0,
+            "topic": "Environment"
+        },
+        {
+            "q": "The SI unit of power is:",
+            "options": [
+                "Joule",
+                "Watt",
+                "Newton",
+                "Pascal"
+            ],
+            "answer": 1,
+            "topic": "Science"
+        },
+        {
+            "q": "Which is a constitutional body?",
+            "options": [
+                "NITI Aayog",
+                "Election Commission",
+                "SEBI",
+                "NHAI"
+            ],
+            "answer": 1,
+            "topic": "Polity"
+        },
+        {
+            "q": "Fiscal deficit means:",
+            "options": [
+                "Exports minus imports",
+                "Total expenditure minus receipts excluding borrowings",
+                "Tax minus subsidy",
+                "Revenue surplus"
+            ],
+            "answer": 1,
+            "topic": "Economy"
+        },
+        {
+            "q": "The monsoon is mainly caused by:",
+            "options": [
+                "Differential heating of land and sea",
+                "Ocean salinity",
+                "Earthquakes",
+                "Tides"
+            ],
+            "answer": 2,
+            "topic": "Geography"
+        }
+    ]
+}

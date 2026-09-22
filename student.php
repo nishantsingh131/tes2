@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
+$user = require_login();
+header('Location: dashboard.php');
+exit;
+$catalog = [
+	'ssc-cgl' => ['SSC CGL', 'Quant, reasoning, English and GK'],
+	'ssc-chsl' => ['SSC CHSL', 'Full-length descriptive-ready mocks'],
+	'rrb-ntpc' => ['RRB NTPC', 'CBT 1 and CBT 2 timed mocks'],
+	'rrb-group-d' => ['RRB Group D', 'Maths, reasoning, science and GK'],
+	'ibps-po' => ['IBPS PO', 'Prelims and mains practice'],
+	'sbi-clerk' => ['SBI Clerk', 'Prelims and mains practice'],
+	'bpsc-prelims' => ['BPSC Prelims', 'Current syllabus general studies'],
+	'state-psc-mains' => ['State PSC Mains', 'Descriptive general studies papers'],
+	'nda-cds' => ['NDA & CDS', 'Maths and general ability'],
+	'ctet' => ['CTET', 'Paper I and II subject sets'],
+];
+$enrolled = array_values(array_intersect(array_keys($catalog), $user['enrolled'] ?? []));
+$attempts = array_reverse($user['attempts'] ?? []);
+$averageScore = $attempts === [] ? 0 : (int) round(array_sum(array_column($attempts, 'percentage')) / count($attempts));
+?>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Student dashboard | RankSetu</title>
+<style>
+:root{--navy:#16233f;--maroon:#9c3b2e;--paper:#efece2;--card:#f7f5ec;--ink:#1c1a15;--muted:#625e50;--line:#cfc7ac;--gold:#a97a24}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,sans-serif}header{background:var(--navy);border-bottom:3px solid var(--gold);color:white;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;gap:16px}.brand{font:700 1.45rem Georgia,serif;color:white;text-decoration:none}.nav{display:flex;align-items:center;gap:20px}.user-name{color:#f5ead2;font-size:.9rem}.home-link,.logout{color:#f5ead2;text-decoration:none;font-size:.9rem}.home-link:hover,.logout:hover{text-decoration:underline}.wrap{width:min(1080px,calc(100% - 40px));margin:0 auto;padding:56px 0}h1,h2{font-family:Georgia,serif;color:var(--navy)}h1{font-size:clamp(2rem,5vw,3rem);margin:0 0 8px}p{color:var(--muted)}.welcome{margin-bottom:28px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0 38px}.stat,.card{background:var(--card);border:1px solid var(--line);padding:22px}.stat strong{display:block;color:var(--maroon);font:700 1.8rem Georgia,serif}.stat span{font-size:.82rem;color:var(--muted)}.section-head{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:14px}.section-head h2{margin:0}.section-head a{color:var(--maroon);font-weight:700;font-size:.9rem}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card h2{font-size:1.2rem;margin-top:0}.card p{font-size:.92rem;min-height:45px}.meta{font-size:.8rem;color:var(--muted);margin:14px 0}.btn{display:inline-block;background:var(--maroon);color:white;text-decoration:none;padding:11px 15px;font-weight:700;font-size:.9rem}.btn:hover{background:#832f24}.empty{background:var(--card);border:1px dashed var(--line);padding:28px;color:var(--muted)}.status{border-left:4px solid var(--gold);padding:12px 16px;background:rgba(169,122,36,.1);margin-top:32px}.chart{display:grid;gap:10px}.chart-row{display:grid;grid-template-columns:140px 1fr 50px;gap:10px;align-items:center;font-size:.82rem}.chart-bar{height:10px;background:var(--line)}.chart-bar span{display:block;height:100%;background:var(--maroon)}@media(max-width:700px){.grid,.stats{grid-template-columns:1fr}.wrap{padding:36px 0}.nav{gap:10px;flex-wrap:wrap;justify-content:flex-end}.user-name{display:none}.section-head{align-items:start;flex-direction:column}.chart-row{grid-template-columns:100px 1fr 45px}}
+</style>
+</head>
+<body><header><a class="brand" href="index.php">RankSetu</a><nav class="nav" aria-label="Student navigation"><span class="user-name"><?= e($user['name']) ?></span><a class="home-link" href="index.php">Home</a><a class="logout" href="logout.php">Log out</a></nav></header><main class="wrap"><section class="welcome"><h1>Good to see you, <?= e($user['name']) ?>.</h1><p>Your preparation space for focused, consistent practice.</p></section><section class="stats"><div class="stat"><strong><?= count($enrolled) ?></strong><span>enrolled series</span></div><div class="stat"><strong><?= count($enrolled) * 15 ?></strong><span>practice tests available</span></div><div class="stat"><strong>0</strong><span>tests attempted</span></div></section><div class="section-head"><h2>My learning</h2><a href="index.php#exams">Browse all series &rarr;</a></div><?php if ($enrolled === []): ?><div class="empty">You have not enrolled in a series yet. Browse the catalog to find your first practice track.</div><?php else: ?><section class="grid"><?php foreach ($enrolled as $slug): ?><article class="card"><h2><?= e($catalog[$slug][0]) ?></h2><p><?= e($catalog[$slug][1]) ?></p><div class="meta">15 tests &bull; Ready to practice</div><a class="btn" href="practice.php?product=<?= e($slug) ?>">Start practice</a></article><?php endforeach; ?></section><?php endif; ?><p class="status"><strong>Practice mode:</strong> enroll in any series for free now. Scores, history and payment will be added in the next step.</p><div class="section-head" style="margin-top:42px"><h2>Help &amp; policies</h2></div><section class="grid"><article class="card"><h2>About &amp; contact</h2><p>Learn about RankSetu or get support from our team.</p><a class="btn" href="info.php?page=about">About RankSetu</a><div class="meta"><a href="info.php?page=contact">Contact us</a> &bull; <a href="info.php?page=disclaimer">Disclaimer</a></div></article><article class="card"><h2>FAQ &amp; privacy</h2><p>Find answers and understand how your account data is handled.</p><a class="btn" href="info.php?page=faq">Open FAQ</a><div class="meta"><a href="info.php?page=privacy">Privacy policy</a></div></article><article class="card"><h2>Terms and refunds</h2><p>Review usage, refund and cancellation information.</p><a class="btn" href="info.php?page=terms">Terms &amp; conditions</a><div class="meta"><a href="info.php?page=refund">Refund &amp; cancellation policy</a></div></article></section></main></body></html>
+

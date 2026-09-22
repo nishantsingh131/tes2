@@ -1,0 +1,105 @@
+{
+    "title": "State PSC Mains General Studies Mock 01",
+    "duration_minutes": 10,
+    "questions": [
+        {
+            "q": "The main function of the legislature is to:",
+            "options": [
+                "Make laws",
+                "Enforce laws",
+                "Interpret laws",
+                "Conduct elections"
+            ],
+            "answer": 0,
+            "topic": "Polity"
+        },
+        {
+            "q": "Choose the synonym of 'accurate'.",
+            "options": [
+                "Correct",
+                "Large",
+                "Slow",
+                "Distant"
+            ],
+            "answer": 0,
+            "topic": "Language"
+        },
+        {
+            "q": "Find the next number: 1, 4, 9, 16, ?",
+            "options": [
+                "20",
+                "24",
+                "25",
+                "30"
+            ],
+            "answer": 2,
+            "topic": "Reasoning"
+        },
+        {
+            "q": "Directive Principles are contained in:",
+            "options": [
+                "Part III",
+                "Part IV",
+                "Part V",
+                "Part VI"
+            ],
+            "answer": 1,
+            "topic": "Polity"
+        },
+        {
+            "q": "A map scale is used to show:",
+            "options": [
+                "Distance",
+                "Population only",
+                "Rainfall only",
+                "Language"
+            ],
+            "answer": 0,
+            "topic": "Geography"
+        },
+        {
+            "q": "The study of past events is called:",
+            "options": [
+                "Geography",
+                "History",
+                "Economics",
+                "Civics"
+            ],
+            "answer": 1,
+            "topic": "History"
+        },
+        {
+            "q": "Choose the correctly spelt word.",
+            "options": [
+                "Independent",
+                "Independant",
+                "Independet",
+                "Indepandent"
+            ],
+            "answer": 0,
+            "topic": "Language"
+        },
+        {
+            "q": "The average of 4, 6 and 8 is:",
+            "options": [
+                "5",
+                "6",
+                "7",
+                "8"
+            ],
+            "answer": 1,
+            "topic": "Aptitude"
+        },
+        {
+            "q": "The Constitution is the supreme law of:",
+            "options": [
+                "A country",
+                "A village",
+                "A company",
+                "A school"
+            ],
+            "answer": 0,
+            "topic": "Polity"
+        }
+    ]
+}
