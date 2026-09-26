@@ -1,0 +1,17 @@
+<?php
+
+// Copy this file to hostinger-config.php on Hostinger and replace the values.
+// Keep hostinger-config.php private and never commit it to Git.
+
+define('HOSTINGER_USE_DB', '1');
+define('HOSTINGER_DB_DSN', 'mysql:host=localhost;port=3306;dbname=YOUR_DATABASE_NAME;charset=utf8mb4');
+define('HOSTINGER_DB_USER', 'YOUR_DATABASE_USER');
+define('HOSTINGER_DB_PASS', 'YOUR_DATABASE_PASSWORD');
+define('HOSTINGER_APP_URL', 'https://www.example.com');
+define('HOSTINGER_MAIL_FROM', 'no-reply@example.com');
+define('HOSTINGER_MAIL_FROM_NAME', 'FullMockTestSeries.com');
+define('HOSTINGER_FACEBOOK_URL', '');
+define('HOSTINGER_LINKEDIN_URL', '');
+define('HOSTINGER_TWITTER_URL', '');
+define('HOSTINGER_INSTAGRAM_URL', '');
+define('HOSTINGER_YOUTUBE_URL', '');

@@ -1,1 +1,8 @@
 data/users.json
+hostinger-config.php
+hostinger-import.sql
+.mysql-data/
+data/blog-posts.json
+data/subscription-plans.json
+data/subscriptions.json
+uploads/blog/

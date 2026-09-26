@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" role="img" aria-labelledby="title desc">
+  <title id="title">Banking exam practice</title>
+  <desc id="desc">An abstract assessment sheet with a rising progress chart</desc>
+  <defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#667eea"/><stop offset="1" stop-color="#764ba2"/></linearGradient></defs>
+  <rect width="640" height="220" rx="12" fill="url(#bg)"/>
+  <rect x="42" y="34" width="244" height="154" rx="8" fill="#fff" opacity=".96"/>
+  <rect x="68" y="61" width="124" height="12" rx="6" fill="#667eea" opacity=".7"/>
+  <rect x="68" y="91" width="166" height="8" rx="4" fill="#d9def7"/>
+  <rect x="68" y="112" width="142" height="8" rx="4" fill="#d9def7"/>
+  <circle cx="76" cy="151" r="8" fill="#37a169"/><path d="m72 151 3 3 6-7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M356 161 410 120l42 22 76-75" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="528" cy="67" r="12" fill="#e0b34f"/><circle cx="410" cy="120" r="8" fill="#fff"/><circle cx="452" cy="142" r="8" fill="#fff"/>
+</svg>

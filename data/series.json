@@ -1,18 +1,279 @@
 [
     {
-        "slug": "upsc-full-length",
-        "title": "UPSC Civil Services Full-Length Series",
-        "stage": "Prelims",
-        "description": "15 full-length UPSC-style General Studies practice tests. Subject-wise modules will be added next.",
-        "active": true,
-        "created_at": "2026-09-23T00:00:00+00:00"
+        "id": "builtin-0ed81e94c06245a6",
+        "slug": "sbi-po",
+        "title": "SBI PO",
+        "stage": "Prelims & Mains",
+        "description": "Officer-level practice for reasoning, data analysis, English and banking awareness.",
+        "active": false,
+        "created_at": "2026-09-25T17:19:19+00:00"
     },
     {
-        "slug": "series-d62ed6",
-        "title": "UPSC Pre Series",
-        "stage": "Prelims",
-        "description": "",
+        "id": "builtin-edac509979024e8d",
+        "slug": "sbi-clerk",
+        "title": "SBI Clerk",
+        "stage": "Prelims & Mains",
+        "description": "Junior associate practice covering speed, accuracy and customer-facing banking aptitude.",
         "active": false,
-        "created_at": "2026-09-22T19:46:19+00:00"
+        "created_at": "2026-09-25T17:19:27+00:00"
+    },
+    {
+        "id": "builtin-cdeb1b0d9673f19b",
+        "slug": "sbi-cbo",
+        "title": "SBI CBO",
+        "stage": "Online Exam",
+        "description": "Circle-based officer practice with banking, reasoning, English and professional knowledge.",
+        "active": false,
+        "created_at": "2026-09-25T17:19:42+00:00"
+    },
+    {
+        "id": "builtin-560b9b6150092a32",
+        "slug": "uiic-ao",
+        "title": "UIIC AO",
+        "stage": "Prelims & Mains",
+        "description": "Insurance administrative officer practice with aptitude and insurance awareness.",
+        "active": false,
+        "created_at": "2026-09-25T17:20:13+00:00"
+    },
+    {
+        "id": "builtin-ce05b7ca474204fc",
+        "slug": "ibps-rrb-clerk",
+        "title": "IBPS RRB Clerk",
+        "stage": "Prelims & Mains",
+        "description": "Regional rural bank office assistant practice for reasoning, numeracy and awareness.",
+        "active": false,
+        "created_at": "2026-09-25T17:20:43+00:00"
+    },
+    {
+        "id": "builtin-fb1b9610246900a0",
+        "slug": "sbi-apprentice",
+        "title": "SBI Apprentice",
+        "stage": "Online Exam",
+        "description": "Apprentice-level practice for general awareness, quantitative aptitude and local language readiness.",
+        "active": false,
+        "created_at": "2026-09-25T17:24:32+00:00"
+    },
+    {
+        "id": "builtin-f39d9557ea96d5cb",
+        "slug": "ibps-po",
+        "title": "IBPS PO",
+        "stage": "Prelims & Mains",
+        "description": "Probationary officer practice with reasoning, quant, English and banking awareness.",
+        "active": false,
+        "created_at": "2026-09-25T17:24:36+00:00"
+    },
+    {
+        "id": "builtin-1e9a9a4db3f15745",
+        "slug": "ibps-clerk",
+        "title": "IBPS Clerk",
+        "stage": "Prelims & Mains",
+        "description": "Clerical cadre practice focused on speed, accuracy and everyday banking aptitude.",
+        "active": false,
+        "created_at": "2026-09-25T17:24:40+00:00"
+    },
+    {
+        "id": "builtin-ff62df0407f6162a",
+        "slug": "ibps-rrb-po",
+        "title": "IBPS RRB PO",
+        "stage": "Prelims & Mains",
+        "description": "Regional rural bank officer practice with rural economy and banking awareness.",
+        "active": false,
+        "created_at": "2026-09-25T17:24:44+00:00"
+    },
+    {
+        "id": "builtin-95355de6d8f1ac81",
+        "slug": "ibps-so",
+        "title": "IBPS SO",
+        "stage": "Prelims & Professional Knowledge",
+        "description": "Specialist officer practice with common aptitude and professional banking knowledge.",
+        "active": false,
+        "created_at": "2026-09-25T17:24:47+00:00"
+    },
+    {
+        "id": "builtin-6584a29afb6eeae8",
+        "slug": "rbi-grade-b",
+        "title": "RBI Grade B",
+        "stage": "Phase I & II",
+        "description": "Reserve Bank officer practice for economics, finance, reasoning, English and current banking concepts.",
+        "active": false,
+        "created_at": "2026-09-25T17:24:51+00:00"
+    },
+    {
+        "id": "builtin-79135974f955a772",
+        "slug": "rbi-grade-a",
+        "title": "RBI Grade A",
+        "stage": "Phase I & II",
+        "description": "Specialist regulatory officer practice with aptitude and finance-focused preparation.",
+        "active": false,
+        "created_at": "2026-09-25T17:24:55+00:00"
+    },
+    {
+        "id": "builtin-4b86bcbd36ecfa6e",
+        "slug": "nabard-grade-a",
+        "title": "NABARD Grade A",
+        "stage": "Phase I & II",
+        "description": "Development banking officer practice with agriculture, rural development and finance.",
+        "active": false,
+        "created_at": "2026-09-25T17:24:59+00:00"
+    },
+    {
+        "id": "builtin-d585cce99fbad29a",
+        "slug": "rbi-assistant",
+        "title": "RBI Assistant",
+        "stage": "Prelims & Mains",
+        "description": "Assistant-level practice for reasoning, numerical ability, English and banking awareness.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:03+00:00"
+    },
+    {
+        "id": "builtin-dddba4830b51842c",
+        "slug": "nabard-grade-b",
+        "title": "NABARD Grade B",
+        "stage": "Phase I & II",
+        "description": "Manager-level development banking practice with rural economy and financial awareness.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:06+00:00"
+    },
+    {
+        "id": "builtin-0c8e33766a0aba9d",
+        "slug": "nabard-development-assistant",
+        "title": "NABARD Development Assistant",
+        "stage": "Prelims & Mains",
+        "description": "Development assistant practice for reasoning, English, numeracy and rural awareness.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:10+00:00"
+    },
+    {
+        "id": "builtin-febb3f42637e9a0f",
+        "slug": "sebi-grade-a",
+        "title": "SEBI Grade A",
+        "stage": "Phase I & II",
+        "description": "Securities market regulator officer practice with finance and aptitude preparation.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:12+00:00"
+    },
+    {
+        "id": "builtin-bbcfd0601a0b53a0",
+        "slug": "niacl-ao",
+        "title": "NIACL AO",
+        "stage": "Prelims & Mains",
+        "description": "Administrative officer practice for insurance, reasoning, quant and English.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:19+00:00"
+    },
+    {
+        "id": "builtin-b05fd4a592eedef4",
+        "slug": "sebi-grade-b",
+        "title": "SEBI Grade B",
+        "stage": "Phase I & II",
+        "description": "Manager-level securities market practice with finance, economics and reasoning.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:24+00:00"
+    },
+    {
+        "id": "builtin-fc4e27a60f85e1e0",
+        "slug": "lic-aao",
+        "title": "LIC AAO",
+        "stage": "Prelims & Mains",
+        "description": "Assistant administrative officer practice for insurance, aptitude, reasoning and English.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:27+00:00"
+    },
+    {
+        "id": "builtin-6d123ab5a07fd270",
+        "slug": "lic-assistant",
+        "title": "LIC Assistant",
+        "stage": "Prelims & Mains",
+        "description": "Insurance assistant practice for numerical ability, reasoning, English and awareness.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:31+00:00"
+    },
+    {
+        "id": "builtin-758f018afcbf2588",
+        "slug": "lic-ado",
+        "title": "LIC ADO",
+        "stage": "Prelims & Mains",
+        "description": "Apprentice development officer practice with insurance and sales aptitude.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:34+00:00"
+    },
+    {
+        "id": "builtin-6bd09913382ff5e9",
+        "slug": "sidbi-grade-b",
+        "title": "SIDBI Grade B",
+        "stage": "Phase I & II",
+        "description": "Manager-level MSME finance practice with banking, economics and aptitude.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:38+00:00"
+    },
+    {
+        "id": "builtin-97eed21a65a00e3a",
+        "slug": "sidbi-grade-a",
+        "title": "SIDBI Grade A",
+        "stage": "Phase I & II",
+        "description": "Small industries development bank officer practice with finance and MSME awareness.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:41+00:00"
+    },
+    {
+        "id": "builtin-51082283ba763fd7",
+        "slug": "pfrda-grade-a",
+        "title": "PFRDA Grade A",
+        "stage": "Phase I & II",
+        "description": "Pension regulator officer practice with finance, markets and aptitude.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:44+00:00"
+    },
+    {
+        "id": "builtin-8fad86c3d2a53cd6",
+        "slug": "ecgc-po",
+        "title": "ECGC PO",
+        "stage": "Online Exam",
+        "description": "Export credit officer practice with banking, trade finance and reasoning.",
+        "active": false,
+        "created_at": "2026-09-25T17:25:47+00:00"
+    },
+    {
+        "id": "series-cc1238e2af5a9124",
+        "slug": "tet",
+        "title": "test",
+        "stage": "Online Exam prelims",
+        "description": "test",
+        "price_paise": 1000,
+        "active": false,
+        "created_at": "2026-09-25T17:37:29+00:00"
+    },
+    {
+        "id": "series-7319469e859b247e",
+        "slug": "test",
+        "title": "test",
+        "stage": "Online Exam pre",
+        "description": "a",
+        "price_paise": 5000,
+        "active": false,
+        "created_at": "2026-09-25T17:43:28+00:00"
+    },
+    {
+        "id": "series-b3652f517cb1cf4e",
+        "slug": "asa",
+        "title": "Test",
+        "stage": "Online Exam",
+        "description": "12",
+        "group": "Test Exam",
+        "price_paise": 988,
+        "active": true,
+        "created_at": "2026-09-25T17:46:54+00:00"
+    },
+    {
+        "id": "builtin-27dbcebbe7d3dccc",
+        "slug": "sbi-so",
+        "title": "SBI SO",
+        "stage": "Online Exam",
+        "description": "Specialist officer practice with aptitude, reasoning, English and role-ready banking knowledge.",
+        "group": "SBI",
+        "price_paise": 25000,
+        "active": true,
+        "created_at": "2026-09-25T18:16:02+00:00",
+        "image_path": "uploads/series/sbi-so-83af80b28c.png"
     }
 ]
