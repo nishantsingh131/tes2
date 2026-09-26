@@ -276,7 +276,7 @@ html,body{max-width:100%;overflow-x:hidden}
 header.site-header{position:sticky;top:0;z-index:1000;display:block!important;width:100%;max-width:100%;min-width:0;box-sizing:border-box;background:rgba(255,255,255,.97)!important;border-bottom:1px solid #e8e1d3!important;padding:0!important;box-shadow:0 12px 30px rgba(22,35,63,.08);color:#172033}
 header.site-header>.container{width:100%;max-width:1680px;margin:0 auto;padding:0 24px;box-sizing:border-box}
 header.site-header nav#primary-navigation{display:flex;min-height:78px;align-items:center;justify-content:space-between;gap:18px;width:100%}
-header.site-header .logo{display:flex;align-items:center;flex:0 0 auto;padding-right:18px;white-space:nowrap}
+header.site-header .logo{display:flex;align-items:center;flex:0 0 auto;padding-right:18px;border-right:0;white-space:nowrap}
 header.site-header .brand-logo-image{display:block;width:230px;height:76px;max-width:100%;background:#fff;object-fit:contain;object-position:center}
 header.site-header .nav-links{display:flex;flex:1 1 auto;align-items:center;justify-content:flex-end;flex-wrap:nowrap;gap:6px 10px;min-width:0;margin:0;padding:0;list-style:none;white-space:nowrap;overflow:visible}
 header.site-header .nav-links a{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:7px 9px;border-radius:999px;color:#1d2433;text-decoration:none;font:600 .84rem/1.2 Arial,sans-serif;white-space:nowrap;transition:color .18s ease,background-color .18s ease,transform .18s ease}
@@ -385,7 +385,8 @@ function site_layout_output_filter(string $html): string
 
     $seoHead = site_seo_head_markup($html);
     $html = preg_replace('/<title\b[^>]*>.*?<\/title>/is', '', $html, 1) ?? $html;
-    $html = preg_replace('/<\/head>/i', site_layout_css() . $seoHead . '</head>', $html, 1) ?? $html;
+    $favicon = '<link rel="icon" type="image/png" href="/img/fullmocktestseries.png">';
+    $html = preg_replace('/<\/head>/i', site_layout_css() . $favicon . $seoHead . '</head>', $html, 1) ?? $html;
     if ($script === 'result.php') $html = preg_replace('/<\/head>/i', '<style>@media(max-width:600px){.panel .btn{display:block;width:100%;margin:0 0 10px;text-align:center}.panel .btn:last-child{margin-bottom:0}}</style></head>', $html, 1) ?? $html;
     $headerCount = 0;
     if ($script !== 'attempt.php') {
