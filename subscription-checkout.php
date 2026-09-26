@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
+header('Location: subscription-payment.php?plan=' . rawurlencode((string)($_GET['plan'] ?? $_POST['plan'] ?? '')));
+exit;
+$user = require_login();
+$slug = (string)($_GET['plan'] ?? $_POST['plan'] ?? '');
+$plan = null; foreach(subscription_plans(true) as $candidate) if(($candidate['slug']??'') === $slug) {$plan=$candidate;break;}
+if($plan===null){http_response_code(404);exit('Subscription plan not found.');}
+foreach(user_subscriptions((string)$user['id']) as $existing) if(($existing['plan_slug']??'')===$slug && ($existing['status']??'')==='ACTIVE' && (empty($existing['expires_at'])||strtotime((string)$existing['expires_at'])>time())) {header('Location: dashboard.php');exit;}
+$error=''; $coupon=$_SESSION['subscription_coupon'][$slug]??null;
+if($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='apply_coupon') {$coupon=valid_coupon((string)($_POST['coupon']??''),$user,'all',(int)$plan['price_paise']); if($coupon===null)$error='Invalid, expired, restricted or already used coupon.';else $_SESSION['subscription_coupon'][$slug]=$coupon;}
+$discount=is_array($coupon)?(int)$coupon['discount_paise']:0; $final=max(0,(int)$plan['price_paise']-$discount);
+if($_SERVER['REQUEST_METHOD']==='POST' && ($_POST['action']??'')==='demo_pay') {
+    if (payment_mode() !== 'demo') { $error = 'Live payment verification is required before activating a subscription.'; }
+    else {
+    $start=new DateTimeImmutable('now'); $expires=$start;
+    $unit=(string)$plan['duration_unit']; $interval=$unit==='year'?'P'.$plan['duration'].'Y':($unit==='month'?'P'.$plan['duration'].'M':'P'.$plan['duration'].'D'); $expires=$expires->add(new DateInterval($interval));
+    $orderId='SUB-'.strtoupper(bin2hex(random_bytes(6))); $subscription=['id'=>'subscription-'.bin2hex(random_bytes(10)),'user_id'=>$user['id'],'plan_id'=>$plan['id'],'plan_slug'=>$plan['slug'],'plan_name'=>$plan['name'],'status'=>'ACTIVE','start_at'=>$start->format('Y-m-d H:i:s'),'expires_at'=>$expires->format('Y-m-d H:i:s'),'amount_paise'=>$plan['price_paise'],'discount_paise'=>$discount,'tax_paise'=>0,'final_amount_paise'=>$final,'coupon_code'=>is_array($coupon)?$coupon['code']:null,'order_id'=>$orderId,'payment_id'=>null,'created_at'=>date('Y-m-d H:i:s'),'covered_courses'=>$plan['covered_courses']??[],'covered_groups'=>$plan['covered_groups']??[],'all_access'=>!empty($plan['all_access'])];
+    $order = ['id'=>$orderId,'plan'=>$plan['name'],'product'=>$plan['name'],'amount'=>number_format($final/100,2,'.',''),'original_amount'=>number_format(((int)$plan['price_paise'])/100,2,'.',''),'coupon'=>is_array($coupon)?$coupon['code']:null,'discount'=>number_format($discount/100,2,'.',''),'currency'=>$plan['currency']??'INR','status'=>'paid','provider'=>'demo','created_at'=>$subscription['created_at'],'subscription_id'=>$subscription['id']];
+    $orders = array_values(array_filter((array)($user['orders']??[]), static fn(array $saved): bool => ($saved['id']??'') !== $orderId));
+    $orders[] = $order;
+    update_current_user(['orders'=>$orders]);
+    create_subscription_record($subscription); if(is_array($coupon)){ $all=coupons(); foreach($all as &$saved) if(strtoupper((string)($saved['code']??''))===strtoupper((string)$coupon['code'])) $saved['used']=(int)($saved['used']??0)+1; unset($saved); save_coupons($all); } unset($_SESSION['subscription_coupon'][$slug]); header('Location: orders.php?paid='.rawurlencode($orderId)); exit;
+    }
+}
+?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Subscription checkout | <?= e(APP_BRAND_NAME) ?></title><style>body{margin:0;background:#efece2;color:#1c1a15;font:16px Arial}.box{width:min(580px,calc(100% - 32px));margin:55px auto;background:#f8f6ee;border:1px solid #cfc7ac;padding:30px}h1{font:600 2.3rem Georgia;color:#16233f}.muted{color:#625e50}.price{font:700 2.4rem Georgia;color:#9c3b2e;margin:20px 0}.line{display:flex;justify-content:space-between;border-bottom:1px solid #cfc7ac;padding:10px 0}.error{background:#f7ded8;color:#70251c;padding:12px;margin:15px 0}.coupon{display:flex;gap:8px;margin:20px 0}.coupon input{flex:1;padding:11px;border:1px solid #cfc7ac}.btn{border:0;background:#9c3b2e;color:#fff;padding:13px 18px;font-weight:700;cursor:pointer}.back{display:block;color:#9c3b2e;margin-top:20px}</style></head><body><main class="box"><h1><?= e((string)$plan['name']) ?></h1><p class="muted"><?= e((string)($plan['description']??'')) ?></p><div class="line"><span>Subscription price</span><strong>₹<?= number_format(((int)$plan['price_paise'])/100,2) ?></strong></div><?php if(is_array($coupon)): ?><div class="line"><span>Coupon <?= e((string)$coupon['code']) ?></span><strong>-₹<?= number_format($discount/100,2) ?></strong></div><?php endif; ?><div class="price">₹<?= number_format($final/100,2) ?></div><?php if($error!==''): ?><div class="error"><?= e($error) ?></div><?php endif; ?><form method="post" class="coupon"><input type="hidden" name="plan" value="<?= e($slug) ?>"><input type="hidden" name="action" value="apply_coupon"><input name="coupon" placeholder="Coupon code" required><button class="btn" type="submit">Apply coupon</button></form><p class="muted">Payment is server-confirmed before activation. Local development uses the existing demo payment mode; configure the live gateway before accepting real payments.</p><form method="post"><input type="hidden" name="plan" value="<?= e($slug) ?>"><input type="hidden" name="action" value="demo_pay"><button class="btn" type="submit">Complete demo payment</button></form><a class="back" href="subscription.php">Back to plans</a></main></body></html>

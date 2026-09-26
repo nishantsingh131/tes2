@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 header('Content-Type: application/json; charset=utf-8');
+header('X-Robots-Tag: noindex, nofollow');
 $published = [];
 foreach (series_records() as $record) {
     if (!empty($record['active']) && isset($record['slug'], $record['title'])) {

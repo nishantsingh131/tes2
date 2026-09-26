@@ -6,18 +6,8 @@ require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 $user = require_login();
 header('Location: dashboard.php');
 exit;
-$catalog = [
-	'ssc-cgl' => ['SSC CGL', 'Quant, reasoning, English and GK'],
-	'ssc-chsl' => ['SSC CHSL', 'Full-length descriptive-ready mocks'],
-	'rrb-ntpc' => ['RRB NTPC', 'CBT 1 and CBT 2 timed mocks'],
-	'rrb-group-d' => ['RRB Group D', 'Maths, reasoning, science and GK'],
-	'ibps-po' => ['IBPS PO', 'Prelims and mains practice'],
-	'sbi-clerk' => ['SBI Clerk', 'Prelims and mains practice'],
-	'bpsc-prelims' => ['BPSC Prelims', 'Current syllabus general studies'],
-	'state-psc-mains' => ['State PSC Mains', 'Descriptive general studies papers'],
-	'nda-cds' => ['NDA & CDS', 'Maths and general ability'],
-	'ctet' => ['CTET', 'Paper I and II subject sets'],
-];
+$catalog = [];
+foreach (published_banking_catalog() as $seriesSlug => $series) $catalog[$seriesSlug] = [$series['title'], $series['description']];
 $enrolled = array_values(array_intersect(array_keys($catalog), $user['enrolled'] ?? []));
 $attempts = array_reverse($user['attempts'] ?? []);
 $averageScore = $attempts === [] ? 0 : (int) round(array_sum(array_column($attempts, 'percentage')) / count($attempts));

@@ -1,3 +1,17 @@
+<?php
+$requestPath = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+$requestPath = is_string($requestPath) ? rawurldecode($requestPath) : '/';
+$frontPagePaths = ['/', '/index.php', '/banking-test-series.php'];
+$requestedFile = __DIR__ . DIRECTORY_SEPARATOR . ltrim(str_replace('/', DIRECTORY_SEPARATOR, $requestPath), DIRECTORY_SEPARATOR);
+if (!in_array($requestPath, $frontPagePaths, true) && !is_file($requestedFile)) {
+  $_SERVER['SCRIPT_NAME'] = '/404.php';
+  require __DIR__ . DIRECTORY_SEPARATOR . '404.php';
+  exit;
+}
+require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
+require __DIR__ . DIRECTORY_SEPARATOR . 'banking-test-series.php';
+exit;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -926,6 +940,36 @@
     </div>
   </section>
 
+  <section class="blog-section" style="padding-top:0;">
+    <div class="wrap">
+      <div class="section-head" style="margin-bottom:26px;">
+        <span class="kicker">BLOG</span>
+        <h2>Latest from our blog</h2>
+      </div>
+      <div class="blog-feature-grid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;">
+        <article class="feature-card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:0 18px 40px rgba(22,35,63,.06);">
+          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--maroon);font-weight:700;margin-bottom:10px;">BPSC</div>
+          <h3 style="margin-bottom:10px;">How to build a realistic BPSC prelims strategy</h3>
+          <p style="color:var(--ink-soft);margin-bottom:16px;">A simple plan for revision, topic coverage, and mock-test discipline without burnout.</p>
+          <a href="blog.php?slug=bpsc-prelims-2026-strategy" class="btn btn-primary btn-sm">Read article</a>
+        </article>
+        <article class="feature-card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:0 18px 40px rgba(22,35,63,.06);">
+          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--maroon);font-weight:700;margin-bottom:10px;">Current affairs</div>
+          <h3 style="margin-bottom:10px;">A weekly current-affairs routine that actually sticks</h3>
+          <p style="color:var(--ink-soft);margin-bottom:16px;">Use a focused study cadence to cover the news you can use in government exam answers.</p>
+          <a href="blog.php?slug=current-affairs-weekly-routine" class="btn btn-primary btn-sm">Read article</a>
+        </article>
+        <article class="feature-card" style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:0 18px 40px rgba(22,35,63,.06);">
+          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--maroon);font-weight:700;margin-bottom:10px;">SSC</div>
+          <h3 style="margin-bottom:10px;">SSC exam preparation: cut the noise and focus on scoring topics</h3>
+          <p style="color:var(--ink-soft);margin-bottom:16px;">Prioritize high-return sections and build a practice rhythm that improves accuracy.</p>
+          <a href="blog.php?slug=ssc-focus-strategy" class="btn btn-primary btn-sm">Read article</a>
+        </article>
+      </div>
+      <div style="margin-top:18px; text-align:right;"><a href="blog.php" class="link-arrow" style="color:var(--maroon);border-color:var(--maroon);">View all articles →</a></div>
+    </div>
+  </section>
+
   <!-- FAQ -->
   <section id="faq">
     <div class="wrap">
@@ -993,11 +1037,11 @@
       <div class="fcol">
         <h4>Exams</h4>
         <ul>
-          <li><a href="#">SSC</a></li>
-          <li><a href="#">Railways</a></li>
-          <li><a href="#">Banking</a></li>
-          <li><a href="#">State PSC</a></li>
-          <li><a href="#">Defence</a></li>
+          <li><a href="product.php?product=ssc-cgl">SSC</a></li>
+          <li><a href="product.php?product=rrb-ntpc">Railways</a></li>
+          <li><a href="product.php?product=ibps-po">Banking</a></li>
+          <li><a href="product.php?product=bpsc-prelims">State PSC</a></li>
+          <li><a href="product.php?product=nda-cds">Defence</a></li>
         </ul>
       </div>
       <div class="fcol">
@@ -1005,8 +1049,8 @@
         <ul>
           <li><a href="info.php?page=about">About us</a></li>
           <li><a href="info.php?page=contact">Contact us</a></li>
-          <li><a href="#">Blog</a></li>
-          <li><a href="#">Careers</a></li>
+          <li><a href="blog.php">Blog</a></li>
+          <li><a href="index.php#faq">Careers</a></li>
         </ul>
       </div>
       <div class="fcol">
@@ -1099,6 +1143,19 @@ fetch('session-status.php')
     }
   })
   .catch(() => {});
+
+const navToggle = document.getElementById('nav-toggle');
+const mobileNav = document.querySelector('.nav-links');
+if (navToggle && mobileNav) {
+  navToggle.checked = false;
+  mobileNav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => { navToggle.checked = false; }));
+  document.addEventListener('click', event => {
+    if (navToggle.checked && !event.target.closest('.navbar')) navToggle.checked = false;
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') navToggle.checked = false;
+  });
+}
 </script>
 
 </body>
