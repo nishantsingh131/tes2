@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 require_admin();
-$available = [];
-foreach (array_merge(['ssc-cgl' => 'SSC CGL', 'ssc-chsl' => 'SSC CHSL', 'rrb-ntpc' => 'RRB NTPC', 'rrb-group-d' => 'RRB Group D', 'ibps-po' => 'IBPS PO', 'sbi-clerk' => 'SBI Clerk', 'bpsc-prelims' => 'BPSC Prelims', 'state-psc-mains' => 'State PSC Mains', 'nda-cds' => 'NDA & CDS', 'ctet' => 'CTET'], array_column(series_records(), 'title', 'slug')) as $slug => $title) $available[$slug] = $title;
+$available = banking_labels();
+foreach (array_column(series_records(), 'title', 'slug') as $slug => $title) $available[$slug] = $title;
 $slug = (string) ($_GET['series'] ?? $_POST['series'] ?? array_key_first($available));
 $index = isset($_GET['index']) ? (int) $_GET['index'] : (int) ($_POST['index'] ?? -1);
 $requestedTest = (string) ($_GET['test'] ?? $_POST['test'] ?? 'test-01');
 $testId = preg_match('/^test-[0-9]+$/', $requestedTest) === 1 ? $requestedTest : 'test-01';
 $file = __DIR__ . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . $slug . DIRECTORY_SEPARATOR . $testId . '.json';
-if (!isset($available[$slug]) || !is_file($file)) exit('Series not found.');
-$data = json_decode((string) file_get_contents($file), true);
+if (!isset($available[$slug])) exit('Series not found.');
+$data = test_record($slug, $testId);
+if (!is_array($data)) exit('Test not found.');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $question = ['q' => trim((string) $_POST['question']), 'options' => array_map('trim', [(string) $_POST['option_0'], (string) $_POST['option_1'], (string) $_POST['option_2'], (string) $_POST['option_3']]), 'answer' => max(0, min(3, (int) $_POST['answer'])), 'topic' => trim((string) $_POST['topic'])];
     if ($index >= 0 && isset($data['questions'][$index])) $data['questions'][$index] = $question; else $data['questions'][] = $question;
     if (count($data['questions']) > 10) exit('A test can contain a maximum of 10 questions.');
-    file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX);
+    if (db_enabled()) save_test_record($slug, $testId, $data); else file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX);
     header('Location: admin-tests.php?series=' . rawurlencode($slug) . '&test=' . rawurlencode($testId) . '&notice=' . rawurlencode('Question saved.'));
     exit;
 }

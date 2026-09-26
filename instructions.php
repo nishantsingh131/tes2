@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
-$catalog = ['ssc-cgl' => 'SSC CGL', 'ssc-chsl' => 'SSC CHSL', 'rrb-ntpc' => 'RRB NTPC', 'rrb-group-d' => 'RRB Group D', 'ibps-po' => 'IBPS PO', 'sbi-clerk' => 'SBI Clerk', 'bpsc-prelims' => 'BPSC Prelims', 'state-psc-mains' => 'State PSC Mains', 'nda-cds' => 'NDA & CDS', 'ctet' => 'CTET'];
+$catalog = banking_labels();
 foreach (series_records() as $record) if (!empty($record['active']) && isset($record['slug'], $record['title'])) $catalog[$record['slug']] = $record['title'];
 $sample = (string) ($_GET['sample'] ?? '') === '1';
 $slug = (string) ($_GET['product'] ?? '');
@@ -13,7 +13,7 @@ if ($sample) {
     $testUrl = 'attempt.php?sample=1';
 } else {
     $user = require_login();
-    if (!isset($catalog[$slug]) || !in_array($slug, $user['enrolled'] ?? [], true)) {
+    if (!isset($catalog[$slug]) || !user_has_course_access($user, $slug)) {
         header('Location: student.php');
         exit;
     }

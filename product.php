@@ -1,69 +1,148 @@
 <?php
 
-declare(strict_types=1);
 require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
-$catalog = ['ssc-cgl'=>['SSC CGL','Tier I & II','Combined Graduate Level practice with quant, reasoning, English and GK sets'],'ssc-chsl'=>['SSC CHSL','Tier I & II','Higher Secondary Level descriptive-ready mocks'],'rrb-ntpc'=>['RRB NTPC','CBT 1 & 2','Non-Technical Popular Categories timed mocks'],'rrb-group-d'=>['RRB Group D','CBT','Maths, reasoning, science and GK practice'],'ibps-po'=>['IBPS PO','Prelims & Mains','Reasoning, quant, English and banking awareness'],'sbi-clerk'=>['SBI Clerk','Prelims & Mains','Full-length prelims and mains practice'],'bpsc-prelims'=>['BPSC Prelims','Prelims','General studies sets on the current syllabus'],'state-psc-mains'=>['State PSC Mains','Mains','Descriptive general studies papers'],'nda-cds'=>['NDA & CDS','Written exam','Maths and general ability mocks'],'ctet'=>['CTET','Paper I & II','Subject-wise teaching eligibility practice']];
-foreach (series_records() as $record) if (!empty($record['active']) && isset($record['slug'],$record['title'])) $catalog[$record['slug']]=[$record['title'],$record['stage']??'Practice',$record['description']??'Admin-published practice series.'];
-$slug=(string)($_GET['product']??''); if(!isset($catalog[$slug])){header('Location: test-series-landing.html#exams');exit;}$user=require_login();[$title,$stage,$description]=$catalog[$slug];$enrolled=in_array($slug,$user['enrolled']??[],true);
-?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title><?=e($title)?> | RankSetu</title><style>:root{--navy:#16233f;--maroon:#9c3b2e;--paper:#efece2;--card:#f8f6ee;--muted:#625e50;--line:#cfc7ac;--gold:#a97a24}*{box-sizing:border-box}body{margin:0;background:var(--paper);font-family:Arial;color:#1c1a15}header{background:var(--navy);border-bottom:3px solid var(--gold);padding:18px 5%;display:flex;justify-content:space-between}header a{color:#f5ead2;text-decoration:none;margin-left:18px}.brand{font:700 1.5rem Georgia;color:#fff;margin:0}.wrap{width:min(980px,calc(100% - 40px));margin:auto;padding:58px 0}.hero{display:grid;grid-template-columns:1.4fr .8fr;gap:24px}.intro,.buy,.feature{background:var(--card);border:1px solid var(--line);padding:30px}.intro{border-top:5px solid var(--maroon)}.eyebrow{color:var(--maroon);font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}h1,h2{font-family:Georgia;color:var(--navy)}h1{font-size:clamp(2.2rem,5vw,4rem);margin:12px 0}.intro p,.buy p,.feature p{color:var(--muted);line-height:1.7}.buy{background:var(--navy);color:#fff}.buy h2{color:#fff}.price{font:700 2.2rem Georgia;color:#e0b34f;margin:20px 0}.btn{display:block;text-align:center;background:var(--maroon);color:#fff;padding:13px 18px;text-decoration:none;font-weight:700;border:0;width:100%;cursor:pointer}.btn.light{background:#f5ead2;color:var(--navy);margin-top:10px}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}.notice{margin-top:18px;padding:14px;background:#a97a241c;border-left:4px solid var(--gold);color:var(--muted)}@media(max-width:700px){.hero,.features{grid-template-columns:1fr}.wrap{padding:35px 0}}
-</style></head><body><header><a class="brand" href="test-series-landing.html">RankSetu</a><nav><a href="dashboard.php">Dashboard</a><a href="logout.php">Log out</a></nav></header><main class="wrap"><section class="hero"><div class="intro"><div class="eyebrow"><?=e($stage)?></div><h1><?=e($title)?></h1><p><?=e($description)?></p><a class="btn light" href="practice.php?product=<?=e($slug)?>">View practice area</a></div><aside class="buy"><h2><?= $enrolled?'Continue learning':'Enroll and unlock this series' ?></h2><p><?= $enrolled?'You already have access to this series.':'Secure payment is handled by Razorpay. UPI, cards, net banking and wallets are supported.' ?></p><?php if($enrolled): ?><a class="btn light" href="instructions.php?product=<?=e($slug)?>">Start test</a><?php else: ?><div class="price">₹250.00</div><a class="btn" href="checkout.php?plan=<?=e($slug)?>">Enroll now</a><?php endif; ?></aside></section><section class="features"><article class="feature"><h2>Real exam practice</h2><p>Timed questions built for focused preparation and measurable progress.</p></article><article class="feature"><h2>Secure checkout</h2><p>Payment confirmation is verified on the server before access is granted.</p></article><article class="feature"><h2>Order receipt</h2><p>After payment, download your order invoice from your student account.</p></article></section></main></body></html>
 
+$catalog = [];
+foreach (published_banking_catalog() as $seriesSlug => $series) {
+    $catalog[$seriesSlug] = [$series['title'], $series['stage'], $series['description'], '10-question starter test', '10 minutes', (int) ($series['price_paise'] ?? 25000), $series['image_path'] ?? null];
+}
 
-$catalog = [
-    'ssc-cgl' => ['SSC CGL', 'Tier I & II', 'Combined Graduate Level practice with quant, reasoning, English and GK sets.', '15 full-length tests', '60-90 min each'],
-    'ssc-chsl' => ['SSC CHSL', 'Tier I & II', 'Higher Secondary Level mocks with descriptive-ready practice.', '15 full-length tests', '60 min each'],
-    'rrb-ntpc' => ['RRB NTPC', 'CBT 1 & 2', 'Non-Technical Popular Categories timed mocks.', '15 full-length tests', '90 min each'],
-    'rrb-group-d' => ['RRB Group D', 'CBT', 'Maths, reasoning, science and GK sets built to the level-1 pattern.', '15 full-length tests', '90 min each'],
-    'ibps-po' => ['IBPS PO', 'Prelims & Mains', 'Reasoning, quant, English and banking awareness practice.', '15 full-length tests', '60 min each'],
-    'sbi-clerk' => ['SBI Clerk', 'Prelims & Mains', 'Full-length prelims and mains practice sets.', '15 full-length tests', '60 min each'],
-    'bpsc-prelims' => ['BPSC Prelims', 'Prelims', 'General studies sets built on the current Bihar PSC syllabus.', '15 full-length tests', '120 min each'],
-    'state-psc-mains' => ['State PSC Mains', 'Mains', 'Descriptive-style general studies papers for state PSC preparation.', '12 full-length tests', '180 min each'],
-    'nda-cds' => ['NDA & CDS', 'Written exam', 'Maths and general ability mocks for the written stage.', '15 full-length tests', '150 min each'],
-    'ctet' => ['CTET', 'Paper I & II', 'Subject-wise sets for the Central Teacher Eligibility Test.', '15 full-length tests', '150 min each'],
-];
 foreach (series_records() as $record) {
     if (!empty($record['active']) && isset($record['slug'], $record['title'])) {
-        $catalog[$record['slug']] = [$record['title'], $record['stage'] ?? 'Practice', $record['description'] ?? 'Admin-published practice series.', '10 full-length questions', ((string) ($record['duration_minutes'] ?? 10)) . ' min each'];
+        $catalog[$record['slug']] = [
+            $record['title'],
+            $record['stage'] ?? 'Practice',
+            $record['description'] ?? 'Admin-published practice series.',
+            '10 full-length questions',
+            ((string) ($record['duration_minutes'] ?? 10)) . ' min each',
+            max(0, (int) ($record['price_paise'] ?? 25000)),
+            $record['image_path'] ?? null,
+        ];
     }
 }
 
-$slug = (string) ($_GET['product'] ?? $_POST['product'] ?? 'ssc-cgl');
+$slug = (string) ($_GET['product'] ?? $_POST['product'] ?? 'sbi-po');
 if (!isset($catalog[$slug])) {
-    header('Location: test-series-landing.html#exams');
+    header('Location: index.php#exams', true, 302);
+    exit;
+}
+if (preg_match('/^(test|demo|sample|untitled)$/i', trim((string) ($catalog[$slug][0] ?? ''))) === 1) {
+    header('Location: index.php#exams', true, 302);
     exit;
 }
 
 $user = current_user();
-if ($user === null) {
-    header('Location: auth.php?next=' . rawurlencode('product.php?product=' . $slug));
-    exit;
-}
+$entitlement = course_entitlement($user, $slug);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'enroll') {
-    $enrolled = $user['enrolled'] ?? [];
-    if (!in_array($slug, $enrolled, true)) {
-        $enrolled[] = $slug;
+    if ($user === null) {
+        header('Location: auth.php?next=' . rawurlencode('product.php?product=' . $slug));
+        exit;
     }
-    update_current_user(['enrolled' => array_values($enrolled)]);
+    if ($entitlement['source'] === 'subscription') {
+        enroll_user_in_course($user, $slug, 'subscription', (string) ($entitlement['subscription_id'] ?? ''));
+    } else {
+        enroll_user_in_course($user, $slug, 'free');
+    }
     header('Location: product.php?product=' . rawurlencode($slug) . '&enrolled=1');
     exit;
 }
 
-[$title, $stage, $description, $tests, $duration] = $catalog[$slug];
-$isEnrolled = in_array($slug, $user['enrolled'] ?? [], true);
+[$title, $stage, $description, $tests, $duration, $pricePaise, $imagePath] = $catalog[$slug];
+$availableTests = [];
+foreach (test_records($slug) as $testKey => $test) {
+    $questions = $test['questions'] ?? [];
+    if (is_array($questions) && $questions !== []) $availableTests[$testKey] = $test;
+}
+$tests = count($availableTests) . ' available practice tests';
+$duration = $availableTests !== [] ? ((string) ($availableTests[array_key_first($availableTests)]['duration_minutes'] ?? 60)) . ' minutes each' : 'Timing set by admin';
+$isEnrolled = $user !== null && user_has_course_access($user, $slug);
 $justEnrolled = ($_GET['enrolled'] ?? '') === '1';
 ?>
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= e($title) ?> test series | RankSetu</title>
-<style>
-:root{--navy:#16233f;--navy2:#243a64;--maroon:#9c3b2e;--paper:#efece2;--card:#f8f6ee;--ink:#1c1a15;--muted:#625e50;--line:#cfc7ac;--gold:#a97a24}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,sans-serif}header{background:var(--navy);border-bottom:3px solid var(--gold);padding:18px 5%;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font:700 1.5rem Georgia,serif;color:#fff;text-decoration:none}.nav{display:flex;gap:20px;align-items:center}.nav a{color:#f5ead2;text-decoration:none;font-size:.92rem}.user{color:#f5ead2;font-size:.9rem}.wrap{width:min(1050px,calc(100% - 40px));margin:auto;padding:60px 0}.crumb{color:var(--maroon);font-size:.85rem;font-weight:700;text-decoration:none}.hero{margin-top:18px;display:grid;grid-template-columns:1.3fr .7fr;gap:28px;align-items:stretch}.intro,.summary,.feature{background:var(--card);border:1px solid var(--line);padding:32px}.intro{border-top:5px solid var(--maroon)}.kicker{color:var(--maroon);font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}h1,h2{font-family:Georgia,serif;color:var(--navy)}h1{font-size:clamp(2.2rem,5vw,4rem);margin:12px 0}h2{margin-top:0}.intro p{font-size:1.08rem;line-height:1.7;color:var(--muted);max-width:58ch}.summary{background:var(--navy);color:#fff}.summary h2{color:#fff;margin-top:0}.price{font:700 2.4rem Georgia,serif;color:#e0b34f}.summary p{color:#d5d0c0}.btn{display:inline-block;border:0;background:var(--maroon);color:white;text-decoration:none;padding:13px 20px;font-weight:700;cursor:pointer;font-size:.95rem}.btn.secondary{background:transparent;border:1px solid var(--gold);color:var(--navy)}.summary .btn{width:100%;text-align:center;margin-top:12px}.summary .btn.secondary{background:#f5ead2;color:var(--navy);border-color:#f5ead2}.notice{margin-top:20px;padding:14px 16px;background:rgba(169,122,36,.14);border-left:4px solid var(--gold);color:var(--muted)}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}.feature h2{font-size:1.1rem}.feature p{color:var(--muted);font-size:.92rem;line-height:1.6}@media(max-width:720px){.hero,.features{grid-template-columns:1fr}.wrap{padding:36px 0}.nav{gap:10px}.user{display:none}}
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?= e($title) ?> test series | RankSetu</title>
+    <style>
+        :root{--navy:#16233f;--navy2:#243a64;--maroon:#9c3b2e;--paper:#efece2;--card:#f8f6ee;--ink:#1c1a15;--muted:#625e50;--line:#cfc7ac;--gold:#a97a24}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,sans-serif}header{background:var(--navy);border-bottom:3px solid var(--gold);padding:18px 5%;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font:700 1.5rem Georgia,serif;color:#fff;text-decoration:none}.nav{display:flex;gap:20px;align-items:center}.nav a{color:#f5ead2;text-decoration:none;font-size:.92rem}.user{color:#f5ead2;font-size:.9rem}.wrap{width:min(1050px,calc(100% - 40px));margin:auto;padding:60px 0}.crumb{color:var(--maroon);font-size:.85rem;font-weight:700;text-decoration:none}.hero{margin-top:18px;display:grid;grid-template-columns:1.3fr .7fr;gap:28px;align-items:stretch}.intro,.summary,.feature{background:var(--card);border:1px solid var(--line);padding:32px}.intro{border-top:5px solid var(--maroon)}.kicker{color:var(--maroon);font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}h1,h2{font-family:Georgia,serif;color:var(--navy)}h1{font-size:clamp(2.2rem,5vw,4rem);margin:12px 0}h2{margin-top:0}.intro p{font-size:1.08rem;line-height:1.7;color:var(--muted);max-width:58ch}.summary{background:var(--navy);color:#fff}.summary h2{color:#fff;margin-top:0}.price{font:700 2.4rem Georgia,serif;color:#e0b34f}.summary p{color:#d5d0c0}.btn{display:inline-block;border:0;background:var(--maroon);color:white;text-decoration:none;padding:13px 20px;font-weight:700;cursor:pointer;font-size:.95rem}.btn.secondary{background:transparent;border:1px solid var(--gold);color:var(--navy)}.summary .btn{width:100%;text-align:center;margin-top:12px}.summary .btn.secondary{background:#f5ead2;color:var(--navy);border-color:#f5ead2}.notice{margin-top:20px;padding:14px 16px;background:rgba(169,122,36,.14);border-left:4px solid var(--gold);color:var(--muted)}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}.feature h2{font-size:1.35rem}.feature p{color:var(--muted);line-height:1.7}@media (max-width:700px){.hero,.features{grid-template-columns:1fr}.nav{gap:10px;flex-wrap:wrap}.wrap{padding:32px 0}.summary .btn{width:auto;display:block}}
+        .series-details{margin-top:28px;padding:26px 0;border-top:1px solid var(--line)}.series-details h2{font-size:1.55rem}.series-details p{color:var(--muted);line-height:1.7;max-width:72ch}.series-table-wrap{margin-top:18px;overflow-x:auto;background:var(--card);border:1px solid var(--line)}.series-details table{width:100%;min-width:480px;border-collapse:collapse;text-align:left}.series-details caption{text-align:left;padding:14px 16px;font-weight:700;color:var(--navy)}.series-details th,.series-details td{padding:12px 16px;border-top:1px solid var(--line)}.series-details thead th{background:#e7e2d2;color:var(--navy);font-size:.85rem}.series-details tbody th{font-weight:600}.series-note{margin-top:16px;font-size:.9rem}
+    </style>
 </head>
 <body>
-<header><a class="brand" href="test-series-landing.html">RankSetu</a><nav class="nav"><span class="user"><?= e($user['name']) ?></span><a href="student.php">Dashboard</a><a href="logout.php">Log out</a></nav></header>
-<main class="wrap"><a class="crumb" href="test-series-landing.html#exams">&larr; All test series</a><section class="hero"><div class="intro"><div class="kicker"><?= e($stage) ?></div><h1><?= e($title) ?></h1><p><?= e($description) ?></p><a class="btn secondary" href="student.php">View my learning</a></div><aside class="summary"><h2>Start preparing today</h2><p><?= e($tests) ?> &bull; <?= e($duration) ?></p><div class="price">Free to enroll</div><?php if ($isEnrolled): ?><a class="btn secondary" href="practice.php?product=<?= e($slug) ?>">Start practice</a><?php else: ?><form method="post"><input type="hidden" name="product" value="<?= e($slug) ?>"><input type="hidden" name="action" value="enroll"><button class="btn" type="submit">Enroll in this series</button></form><?php endif; ?><a class="btn" href="checkout.php?plan=<?= e($slug) ?>">View demo checkout</a></aside></section><?php if ($justEnrolled): ?><div class="notice"><strong>You are enrolled.</strong> This series is now available in your student dashboard.</div><?php endif; ?><section class="features"><article class="feature"><h2>Exam-style tests</h2><p>Timed practice sets designed around the latest pattern and marking approach.</p></article><article class="feature"><h2>Track your progress</h2><p>Keep every attempt in one place and build a steady preparation habit.</p></article><article class="feature"><h2>Practice first</h2><p>Free enrollment is available now. The demo checkout lets you test the future order flow without charging money.</p></article></section></main>
-</body></html>
+    <header>
+        <a class="brand" href="test-series-landing.html">RankSetu</a>
+        <nav class="nav">
+            <?php if ($user !== null): ?><span class="user"><?= e((string) $user['name']) ?></span><?php endif; ?>
+            <a href="student.php">Dashboard</a>
+            <a href="subscription.php">Subscriptions</a>
+            <a href="logout.php">Log out</a>
+        </nav>
+    </header>
+    <main class="wrap">
+        <a class="crumb" href="banking-test-series.php">&larr; All banking test series</a>
+        <section class="hero">
+            <div class="intro">
+                <img src="<?= e($imagePath ?: 'assets/exam-card.svg') ?>" alt="<?= e($title) ?> practice overview" style="width:100%;max-height:220px;object-fit:cover;margin-bottom:20px">
+                <div class="kicker"><?= e($stage) ?></div>
+                <h1><?= e($title) ?> Mock Test Series</h1>
+                <p><?= e($description) ?></p>
+                <a class="btn secondary" href="<?= $user === null ? 'auth.php?next=' . e(rawurlencode('product.php?product=' . $slug)) : 'student.php' ?>"><?= $user === null ? 'Sign in to track progress' : 'View my learning' ?></a>
+            </div>
+            <aside class="summary">
+                <h2>Start preparing today</h2>
+                <p><?= e($tests) ?> &bull; <?= e($duration) ?></p>
+                <div class="price"><?= $entitlement['eligible'] && $entitlement['source'] === 'subscription' ? '₹0' : '₹' . number_format($pricePaise / 100, 2) ?></div>
+                <?php if ($entitlement['source'] === 'subscription' && !$isEnrolled): ?><p style="color:#e0b34f;font-weight:700">You are a premium user. Included with your active subscription.</p><?php endif; ?>
+                <?php if ($isEnrolled): ?>
+                    <a class="btn secondary" href="practice.php?product=<?= e($slug) ?>">Start practice</a>
+                <?php elseif ($user === null): ?>
+                    <a class="btn" href="auth.php?next=<?= e(rawurlencode('product.php?product=' . $slug)) ?>">Sign in to enroll</a>
+                <?php else: ?>
+                    <form method="post">
+                        <input type="hidden" name="product" value="<?= e($slug) ?>">
+                        <input type="hidden" name="action" value="enroll">
+                        <button class="btn" type="submit"><?= $entitlement['source'] === 'subscription' ? 'Enroll free' : 'Enroll in this series' ?></button>
+                    </form>
+                <?php endif; ?>
+                <?php if ($entitlement['source'] === 'subscription'): ?><p style="color:#e0b34f;font-weight:700;text-align:center;margin-top:12px">Premium access: no payment required</p><?php elseif ($entitlement['source'] === 'owned'): ?><p style="color:#286447;font-weight:700;text-align:center;margin-top:12px">Already enrolled: no payment required</p><?php elseif ($user !== null): ?><a class="btn" href="checkout.php?plan=<?= e($slug) ?>">Continue to checkout</a><?php endif; ?>
+            </aside>
+        </section>
+
+        <?php if ($justEnrolled): ?>
+            <div class="notice"><strong>You are enrolled.</strong> This series is now available in your student dashboard.</div>
+        <?php endif; ?>
+
+        <section class="series-details" aria-labelledby="available-tests-heading">
+            <h2 id="available-tests-heading">Available <?= e($title) ?> practice tests</h2>
+            <?php if ($availableTests !== []): ?>
+                <p>This table reflects the test sets currently published for this series. Question counts and durations are taken from each set's saved configuration.</p>
+                <div class="series-table-wrap"><table><caption><?= e($title) ?> test set details</caption><thead><tr><th scope="col">Test set</th><th scope="col">Questions</th><th scope="col">Time limit</th></tr></thead><tbody>
+                    <?php foreach ($availableTests as $testKey => $test): ?>
+                        <tr><th scope="row"><?= e((string) ($test['title'] ?? $testKey)) ?></th><td><?= count((array) ($test['questions'] ?? [])) ?></td><td><?= max(1, (int) ($test['duration_minutes'] ?? 60)) ?> minutes</td></tr>
+                    <?php endforeach; ?>
+                </tbody></table></div>
+            <?php else: ?>
+                <p>No populated tests are published for this series yet. Check back after the series is updated.</p>
+            <?php endif; ?>
+            <p class="series-note">These are independent practice materials, not official exam papers or a guarantee of an exam result. Verify current eligibility, syllabus, dates and marking rules with the relevant official authority.</p>
+        </section>
+
+        <section class="features">
+            <article class="feature">
+                <h2>Exam-style tests</h2>
+                <p>Use each test set's saved questions and time limit as focused practice, then review your result.</p>
+            </article>
+            <article class="feature">
+                <h2>Track your progress</h2>
+                <p>Keep every attempt in one place and build a steady preparation habit.</p>
+            </article>
+            <article class="feature">
+                <h2>Practice first</h2>
+                <p>Enrollment and payment availability are shown in the current checkout flow. Review the displayed terms before continuing.</p>
+            </article>
+        </section>
+    </main>
+</body>
+</html>

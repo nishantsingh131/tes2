@@ -1,0 +1,2 @@
+ALTER TABLE series
+  ADD COLUMN price_paise INT UNSIGNED NOT NULL DEFAULT 25000 AFTER description;

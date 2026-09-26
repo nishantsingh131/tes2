@@ -3,11 +3,17 @@
 declare(strict_types=1);
 require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 $user = require_login();
-$plans = ['ssc-cgl'=>['SSC CGL Series','ssc-cgl',25000], 'ssc-chsl'=>['SSC CHSL Series','ssc-chsl',25000], 'rrb-ntpc'=>['RRB NTPC Series','rrb-ntpc',25000], 'rrb-group-d'=>['RRB Group D Series','rrb-group-d',25000], 'ibps-po'=>['IBPS PO Series','ibps-po',25000], 'sbi-clerk'=>['SBI Clerk Series','sbi-clerk',25000], 'bpsc-prelims'=>['BPSC Prelims Series','bpsc-prelims',25000], 'state-psc-mains'=>['State PSC Mains Series','state-psc-mains',25000], 'nda-cds'=>['NDA & CDS Series','nda-cds',25000], 'ctet'=>['CTET Series','ctet',25000], 'all-access'=>['All-Access Plan','all-access',99900]];
-foreach (series_records() as $record) if (!empty($record['active']) && isset($record['slug'],$record['title'])) $plans[$record['slug']] = [$record['title'].' Series',$record['slug'],25000];
+$plans = ['all-access'=>['All Banking Access Plan','all-access',99900]];
+foreach (published_banking_catalog() as $seriesSlug => $series) $plans[$seriesSlug] = [$series['title'] . ' Series', $seriesSlug, max(0, (int) ($series['price_paise'] ?? 25000))];
 $planKey=(string)($_GET['plan']??$_POST['plan']??'');
 if(!isset($plans[$planKey])){header('Location: dashboard.php');exit;}
 [$planName,$product,$baseAmount]=$plans[$planKey];
+$courseEntitlement = $product !== 'all-access' ? course_entitlement($user, $product) : ['source' => 'paid'];
+if (in_array($courseEntitlement['source'], ['subscription', 'owned'], true)) {
+	if ($courseEntitlement['source'] === 'subscription') enroll_user_in_course($user, $product, 'subscription', (string) ($courseEntitlement['subscription_id'] ?? ''));
+	header('Location: product.php?product=' . rawurlencode($product) . '&enrolled=1&subscription=1');
+	exit;
+}
 $coupon=$_SESSION['checkout_coupon'][$planKey]??null;$error='';
 if($_SERVER['REQUEST_METHOD']==='POST'&&($_POST['action']??'')==='apply_coupon'){$coupon=valid_coupon((string)($_POST['coupon']??''),$user,$product,$baseAmount);if($coupon===null)$error='Coupon is invalid, expired, restricted or already used.';else$_SESSION['checkout_coupon'][$planKey]=$coupon;}
 $amount=is_array($coupon)?(int)$coupon['final_paise']:$baseAmount;
