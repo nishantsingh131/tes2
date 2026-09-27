@@ -67,7 +67,7 @@ For production password resets, set `HOSTINGER_APP_URL`, `HOSTINGER_MAIL_FROM` a
 - The existing development account is bootstrapped with the `admin` role.
 - Create, update, activate/deactivate and delete custom test series.
 - Add, edit and delete questions through `admin-question.php`; tests are limited to ten questions in this starter.
-- Review registered users, active status, enrollments, simulated paid orders, simulated revenue and average performance.
+- Review registered users, active status, enrollments, recorded orders, paid revenue and average performance.
 - Toggle student access to deactivate or reactivate an account. Administrators cannot deactivate themselves.
 - Manage subscription plans at `admin-subscriptions.php`; plans support explicit course slugs, category names, and all-access coverage.
 - Manage users, premium status, course enrollments and per-course performance at `admin-course-control.php`. Course access is revoked reversibly; orders and submitted attempts are retained for audit.
@@ -91,17 +91,13 @@ The Contact page validates and stores submissions in MySQL after applying `migra
 
 The shared footer links to `https://fullmocktestseries.com`. Set `HOSTINGER_FACEBOOK_URL`, `HOSTINGER_LINKEDIN_URL`, `HOSTINGER_TWITTER_URL`, `HOSTINGER_INSTAGRAM_URL`, and `HOSTINGER_YOUTUBE_URL` in `hostinger-config.php` when the official profiles are available. Only HTTPS URLs on the corresponding platform domains are enabled.
 
-For production, move users to a database and connect a server-side payment provider such as Razorpay or Stripe. Never trust a client-side payment success message.
+For production, use MySQL and configure Razorpay server-side. Never trust a client-side payment success message.
 
 ## Razorpay checkout
 
-The checkout uses Razorpay Orders API and server-side signature verification. Set these environment variables before accepting payments:
+Course checkout and premium subscriptions use Razorpay Orders API. Enrollment and subscription activation require both a valid checkout signature and a server-side Razorpay confirmation that the payment is captured for the expected order, amount and currency. There is no demo payment path. Set these environment variables on the server before accepting payments:
 
-```powershell
-$env:RAZORPAY_KEY_ID = "rzp_test_your_key_id"
-$env:RAZORPAY_KEY_SECRET = "your_key_secret"
-php -S localhost:8000 -t . local-router.php
-```
+`RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`
 
-Use Razorpay test keys while developing. Without both variables, checkout refuses to create an order and does not enroll the student. After a verified payment, the order is saved, the series is enrolled, the order appears in `orders.php`, and the student can download an invoice from the dashboard.
+This production checkout accepts only a Key ID beginning with `rzp_live_` and its matching Key Secret, configured through server environment variables or the private Hostinger config. Razorpay test keys are rejected. The site must run over HTTPS; without both live credentials, checkout fails closed and no enrollment is granted. Never commit or expose the Key Secret.
 

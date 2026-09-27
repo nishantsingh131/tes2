@@ -20,12 +20,24 @@ In Hostinger hPanel:
 8. Run `migrations/009_add_enrollment_access_control.sql` to enable reversible per-user course deactivation and live access enforcement.
 9. Run `migrations/010_create_blog_posts.sql` to enable MySQL-backed blog submissions and review.
 10. Run `scripts/import_json_to_mysql.php` once with the Hostinger database credentials. This seeds the 27 banking series and 270 starter questions.
+11. Run `migrations/011_activate_sbi_subscription.sql` after the import to publish the five SBI series and create the active SBI-only Bank Premium plan in MySQL. This migration can be safely rerun.
 
 The importer creates the schema, imports users and orders, and seeds the production banking catalog. `hostinger-import.sql` is a legacy snapshot and does not contain the new banking catalog.
 
 ## 3. Upload the application
 
 Upload the PHP application files to `public_html`. Do not upload local runtime folders such as `.mysql-data`; it is not needed. Keep `hostinger-import.sql` outside `public_html` or delete it after importing.
+
+### Automatic deployment from GitHub
+
+The workflow in `.github/workflows/deploy-hostinger.yml` deploys committed changes to Hostinger over FTPS whenever `main` is pushed in the `fullmocktestseries` GitHub repository. It also supports manual runs from the GitHub Actions tab.
+
+1. In GitHub, open the repository's **Settings > Secrets and variables > Actions**.
+2. Add repository secrets named `HOSTINGER_FTP_SERVER`, `HOSTINGER_FTP_USERNAME`, `HOSTINGER_FTP_PASSWORD`, and `HOSTINGER_SERVER_DIR` using the values shown for your Hostinger FTP account. The server directory must point to this site's `public_html` and end with `/`.
+3. Confirm the Hostinger FTP account supports explicit FTPS on port 21. Update the workflow port only if hPanel specifies a different FTPS port.
+4. Commit and push intended changes to `main`. Check **Actions > Deploy to Hostinger** and then verify the live site.
+
+The deployment excludes `hostinger-config.php`, `.env` files, live `data/`, `uploads/`, database migrations, and scripts. It does not run SQL migrations or the JSON importer. Review the staged files before committing; do not stage server credentials or unrelated local data.
 
 ## 4. Configure MySQL
 
@@ -50,6 +62,8 @@ Add the official HTTPS profile URLs to these settings when the accounts are read
 
 Keep `hostinger-config.php` private. It is ignored by Git when added to the server only.
 
+For Razorpay, either set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in the hosting environment or set `HOSTINGER_RAZORPAY_KEY_ID` and `HOSTINGER_RAZORPAY_KEY_SECRET` in the server-only `hostinger-config.php`. Use the live Key ID beginning with `rzp_live_` and its matching Secret. Never put real credentials in the example file or commit them to Git.
+
 Use an email address created on the same domain as the website for `HOSTINGER_MAIL_FROM`. Hostinger's PHP `mail()` service must be enabled for the account, and the domain should have valid SPF/DKIM records so reset emails are accepted reliably.
 
 ## 5. Test
@@ -68,7 +82,10 @@ Open your domain and verify:
 - Orders and coupons appear in the database.
 - Forgot-password creates a database reset token.
 - Forgot-password sends a one-hour reset link by email; reset tokens are hashed in MySQL and are never written to a text file in production.
-- Create plans from `/admin-subscriptions.php`, then test an eligible course enrollment. Do not enable real subscription payments until the gateway callback/signature flow is configured; local demo activation is restricted to `PAYMENT_MODE=demo`.
+- Configure the matching live Razorpay Key ID and Key Secret in the hosting environment or private `hostinger-config.php`. This production checkout rejects test keys and requires a Key ID beginning with `rzp_live_`. Keep the secret out of source control and public files.
+- Production enrollment and activation require a valid signature and Razorpay API confirmation of a captured payment; missing or invalid credentials fail closed. Verify the flow using a controlled low-value live purchase and refund before launch.
+- Create plans from `/admin-subscriptions.php`, then verify eligible course enrollment and premium access after a successful Razorpay payment.
+- Open `/subscription.php` and confirm Bank Premium is listed for the five SBI series. Confirm the SBI series are published in `/admin.php`.
 - Open `/admin-course-control.php` and verify that an admin can view premium status, course-level attempts/averages, and deactivate/restore access without deleting orders or history.
 
-Do not enable real Razorpay payments until the site is on HTTPS and the production Razorpay keys are configured.
+Do not accept production payments until the site is on HTTPS, Razorpay has approved the account for live payments, and the production Razorpay keys are configured. Make a low-value live transaction and verify the order, enrollment, invoice and refund process before announcing checkout.

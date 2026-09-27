@@ -2,13 +2,20 @@
 
 declare(strict_types=1);
 
-// Usage: php scripts/import_json_to_mysql.php
-// Optional environment variables: DB_DSN, DB_USER, DB_PASS.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
 
-$dsn = getenv('DB_DSN') ?: 'mysql:host=127.0.0.1;dbname=tes2;charset=utf8mb4';
-$user = getenv('DB_USER') ?: 'root';
-$pass = getenv('DB_PASS') ?: '';
 $base = dirname(__DIR__);
+$hostingerConfig = $base . DIRECTORY_SEPARATOR . 'hostinger-config.php';
+if (is_file($hostingerConfig)) require_once $hostingerConfig;
+
+// Usage: php scripts/import_json_to_mysql.php
+// Environment variables take precedence over the private Hostinger config.
+$dsn = getenv('DB_DSN') ?: (defined('HOSTINGER_DB_DSN') ? HOSTINGER_DB_DSN : 'mysql:host=127.0.0.1;dbname=tes2;charset=utf8mb4');
+$user = getenv('DB_USER') ?: (defined('HOSTINGER_DB_USER') ? HOSTINGER_DB_USER : 'root');
+$pass = getenv('DB_PASS') ?: (defined('HOSTINGER_DB_PASS') ? HOSTINGER_DB_PASS : '');
 
 function read_json(string $path): array
 {
@@ -64,6 +71,7 @@ try {
         $userStmt->execute([':id' => $record['id'], ':name' => $record['name'] ?? 'Student', ':email' => strtolower($record['email']), ':password' => $record['password'] ?? password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT), ':role' => ($record['role'] ?? 'student') === 'admin' ? 'admin' : 'student', ':active' => !empty($record['active']) ? 1 : 0, ':created_at' => sql_datetime($record['created_at'] ?? null)]);
         foreach (array_unique((array) ($record['enrolled'] ?? [])) as $slug) if (isset($seriesIds[$slug])) $enrollStmt->execute([':user_id' => $record['id'], ':series_id' => $seriesIds[$slug], ':source' => 'free', ':enrolled_at' => sql_datetime($record['created_at'] ?? null)]);
         foreach ((array) ($record['orders'] ?? []) as $saved) {
+            if (($saved['provider'] ?? '') === 'demo') continue;
             $product = (string) ($saved['product'] ?? $saved['plan'] ?? '');
             $amount = (int) round(((float) ($saved['amount'] ?? 0)) * 100);
             $original = (int) round(((float) ($saved['original_amount'] ?? $saved['amount'] ?? 0)) * 100);

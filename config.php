@@ -179,17 +179,17 @@ function store_contact_message(array $message): void
 
 function razorpay_key_id(): string
 {
-    return (string) (getenv('RAZORPAY_KEY_ID') ?: '');
+    return (string) (getenv('RAZORPAY_KEY_ID') ?: (defined('HOSTINGER_RAZORPAY_KEY_ID') ? HOSTINGER_RAZORPAY_KEY_ID : ''));
 }
 
 function razorpay_key_secret(): string
 {
-    return (string) (getenv('RAZORPAY_KEY_SECRET') ?: '');
+    return (string) (getenv('RAZORPAY_KEY_SECRET') ?: (defined('HOSTINGER_RAZORPAY_KEY_SECRET') ? HOSTINGER_RAZORPAY_KEY_SECRET : ''));
 }
 
-function payment_mode(): string
+function razorpay_is_configured(): bool
 {
-    return strtolower((string) (getenv('PAYMENT_MODE') ?: 'demo'));
+    return str_starts_with(razorpay_key_id(), 'rzp_live_') && razorpay_key_secret() !== '';
 }
 
 function coupons(): array
@@ -555,6 +555,26 @@ function verify_razorpay_signature(string $orderId, string $paymentId, string $s
     return hash_equals($expected, $signature);
 }
 
+function verify_razorpay_payment(string $orderId, string $paymentId, int $expectedAmount, string $currency = 'INR'): bool
+{
+    if (!razorpay_is_configured() || !function_exists('curl_init') || $paymentId === '') return false;
+    $curl = curl_init('https://api.razorpay.com/v1/payments/' . rawurlencode($paymentId));
+    curl_setopt_array($curl, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_USERPWD => razorpay_key_id() . ':' . razorpay_key_secret(),
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    $body = curl_exec($curl);
+    $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+    $payment = json_decode((string) $body, true);
+    return $status >= 200 && $status < 300 && is_array($payment)
+        && hash_equals($orderId, (string) ($payment['order_id'] ?? ''))
+        && (int) ($payment['amount'] ?? 0) === $expectedAmount
+        && strtoupper((string) ($payment['currency'] ?? '')) === strtoupper($currency)
+        && ($payment['status'] ?? '') === 'captured';
+}
+
 function ensure_user_store(): void
 {
     $directory = dirname(USER_FILE);
@@ -813,9 +833,10 @@ function delete_test_record(string $slug, string $testKey): void
 function test_record(string $slug, string $testKey): ?array
 {
     if ($slug === 'sample') {
-        $sample = test_records('sbi-po')['test-01'] ?? null;
-        if (is_array($sample)) $sample['title'] = APP_BRAND_NAME . ' Free Sample Mock';
-        return $sample;
+        $samplePath = __DIR__ . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'sample' . DIRECTORY_SEPARATOR . 'test-01.json';
+        if (!is_file($samplePath)) return null;
+        $sample = json_decode((string) file_get_contents($samplePath), true);
+        return is_array($sample) ? $sample : null;
     }
     $tests = test_records($slug);
     return $tests[$testKey] ?? null;
@@ -937,7 +958,7 @@ function sync_user_relational_data(PDO $pdo, array $user): void
             $amount = (int) round(((float) ($saved['amount'] ?? 0)) * 100);
             $original = (int) round(((float) ($saved['original_amount'] ?? $saved['amount'] ?? 0)) * 100);
             $discount = (int) round(((float) ($saved['discount'] ?? 0)) * 100);
-            $order->execute([':id' => $saved['id'] ?? bin2hex(random_bytes(8)), ':user_id' => $userId, ':plan' => $product, ':amount' => $amount, ':original_amount' => $original, ':currency' => $saved['currency'] ?? 'INR', ':status' => $saved['status'] ?? 'paid', ':provider' => $saved['provider'] ?? 'demo', ':coupon' => $saved['coupon'] ?? null, ':discount' => $discount, ':created_at' => db_datetime($saved['created_at'] ?? null)]);
+            $order->execute([':id' => $saved['id'] ?? bin2hex(random_bytes(8)), ':user_id' => $userId, ':plan' => $product, ':amount' => $amount, ':original_amount' => $original, ':currency' => $saved['currency'] ?? 'INR', ':status' => $saved['status'] ?? 'paid', ':provider' => $saved['provider'] ?? 'unknown', ':coupon' => $saved['coupon'] ?? null, ':discount' => $discount, ':created_at' => db_datetime($saved['created_at'] ?? null)]);
             if ($product !== 'all-access') {
                 $lookup->execute([':slug' => $product]);
                 $seriesId = $lookup->fetchColumn();

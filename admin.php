@@ -22,8 +22,10 @@ foreach (banking_catalog() as $slug => $definition) {
     ];
 }
 foreach ($records as $record) if (!isset($series[$record['slug'] ?? '']) && !empty($record['slug'])) $series[$record['slug']] = $record;
-$visibleSeries = array_filter($series, static fn(array $item): bool => !empty($item['active']));
-$series = $visibleSeries;
+$requestedSlug = (string) ($_GET['series'] ?? $_POST['series'] ?? '');
+$showArchived = (string) ($_GET['view'] ?? '') === 'archived'
+    || ($requestedSlug !== '' && isset($series[$requestedSlug]) && empty($series[$requestedSlug]['active']));
+$visibleSeries = array_filter($series, static fn(array $item): bool => !empty($item['active']) !== $showArchived);
 
 $slug = (string) ($_GET['series'] ?? $_POST['series'] ?? array_key_first($visibleSeries));
 if (!isset($visibleSeries[$slug])) $slug = (string) array_key_first($visibleSeries);
@@ -126,6 +128,35 @@ $average = $totalAttempts ? (int) round($totalScore / $totalAttempts) : 0;
 ?><!doctype html>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('form').forEach((form) => {
+        const price = form.querySelector('input[name="price"]');
+        const action = form.querySelector('input[name="action"]');
+        if (!price || !action || !['create_series', 'update_series'].includes(action.value)) return;
+        const priceLabel = price.closest('label');
+        if (!priceLabel) return;
+        const accessLabel = document.createElement('label');
+        accessLabel.append(document.createTextNode('Enrollment type'));
+        const accessType = document.createElement('select');
+        accessType.name = 'access_type';
+        accessType.add(new Option('Paid', 'paid'));
+        accessType.add(new Option('Free', 'free'));
+        accessLabel.append(accessType);
+        priceLabel.before(accessLabel);
+        let paidPrice = Number(price.value) > 0 ? price.value : '250';
+        accessType.value = Number(price.value) === 0 ? 'free' : 'paid';
+        const syncAccessType = () => {
+            if (accessType.value === 'free') {
+                if (Number(price.value) > 0) paidPrice = price.value;
+                price.value = '0';
+                priceLabel.hidden = true;
+            } else {
+                priceLabel.hidden = false;
+                if (Number(price.value) === 0) price.value = paidPrice;
+            }
+        };
+        accessType.addEventListener('change', syncAccessType);
+        syncAccessType();
+    });
     const tabs = [...document.querySelectorAll('.tabs .tab')];
     const catalog = document.getElementById('catalog');
     const progress = document.getElementById('progress');
@@ -162,10 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
 <body><header><a class="brand" href="admin.php">RankSetu Admin</a><nav class="nav"><a href="banking-test-series.php">View site</a><a href="blog-admin.php">Blog manager</a><a href="admin-business.php">Business analytics</a><a href="admin-course-control.php">Users &amp; course access</a><a href="subscription.php">Subscriptions</a><a href="admin-subscriptions.php">Manage plans</a><a href="admin-coupons.php">Coupons</a><a href="logout.php">Log out</a></nav></header>
 <main class="wrap"><div class="intro"><div><h1>Admin workspace</h1><p class="muted">Manage banking series, questions and learner progress from one place.</p></div><div class="muted">Signed in as <?= e((string) $admin['name']) ?></div></div>
 <nav class="tabs"><a class="tab active" href="#catalog">Series &amp; questions</a><a class="tab" href="#progress">User progress</a></nav>
+<p><a class="btn outline" href="admin.php<?= $showArchived ? '' : '?view=archived' ?>#catalog"><?= $showArchived ? 'View published series' : 'View archived series' ?></a></p>
 <?php if ($notice !== ''): ?><div class="notice"><?= e($notice) ?></div><?php endif; ?><?php if ($error !== ''): ?><div class="error"><?= e($error) ?></div><?php endif; ?>
 <section class="panel" id="create-series"><h2>Create a test series</h2><p class="muted">Create multiple series under the same parent category. Each starts with one starter set.</p><form method="post" enctype="multipart/form-data" class="toolbar"><input type="hidden" name="action" value="create_series"><label>Parent category<input name="parent_group" value="Other exams" placeholder="Example: Banking exams" required></label><label>Series title<input name="title" placeholder="Example: NABARD Grade A" required></label><label>URL slug<input name="slug" placeholder="nabard-grade-a" pattern="[a-z0-9-]+" title="Use lowercase letters, numbers and hyphens only"></label><label>Exam stage<input name="stage" value="Online Exam" required></label><label>Price (INR)<input name="price" type="number" min="0" max="1000000" step="0.01" value="250" required></label><label>Description<input name="description" placeholder="Short description for students" required></label><label>Series image (JPG, PNG or WebP, max 3 MB)<input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label><label class="check"><input type="checkbox" name="publish" checked> Publish on main page</label><button class="btn" type="submit">Create series</button></form></section>
-<section class="stats"><div class="stat"><strong><?= count($series) ?></strong><span>total series</span></div><div class="stat"><strong><?= count(array_filter($series, static fn(array $item): bool => !empty($item['active']))) ?></strong><span>published series</span></div><div class="stat"><strong><?= count($users) ?></strong><span>registered users</span></div><div class="stat"><strong><?= $activeUsers ?></strong><span>active users</span></div><div class="stat"><strong><?= $average ?>%</strong><span>average score</span></div></section>
-<section id="catalog" class="layout"><div class="panel"><h2>Banking series</h2><p class="muted">Select a series to edit its details or manage its tests and questions.</p><div class="series-grid"><?php foreach ($series as $itemSlug => $item): ?><article class="series-card"><div class="badge <?= empty($item['active']) ? 'off' : '' ?>"><?= empty($item['active']) ? 'Archived' : 'Published' ?></div><h3><?= e($item['title']) ?></h3><p><?= e($item['description'] ?? '') ?></p><div class="actions"><a class="btn outline" href="admin.php?series=<?= e($itemSlug) ?>#editor">Edit series</a><a class="btn" href="admin-tests.php?series=<?= e($itemSlug) ?>">Tests &amp; questions</a></div><form method="post" style="margin-top:10px" onsubmit="return confirm('Delete this complete series and hide all of its tests?')"><input type="hidden" name="action" value="delete_series"><input type="hidden" name="series" value="<?= e($itemSlug) ?>"><button class="btn danger" type="submit">Delete series</button></form></article><?php endforeach; ?></div></div>
+<section class="stats"><div class="stat"><strong><?= count($series) ?></strong><span>all series, incl. archived</span></div><div class="stat"><strong><?= count(array_filter($series, static fn(array $item): bool => !empty($item['active']))) ?></strong><span>published series</span></div><div class="stat"><strong><?= count($users) ?></strong><span>registered users</span></div><div class="stat"><strong><?= $activeUsers ?></strong><span>active users</span></div><div class="stat"><strong><?= $average ?>%</strong><span>average score</span></div></section>
+<section id="catalog" class="layout"><div class="panel"><h2>Banking series</h2><p class="muted">Select a series to edit its details or manage its tests and questions.</p><div class="series-grid"><?php foreach ($visibleSeries as $itemSlug => $item): ?><article class="series-card"><div class="badge <?= empty($item['active']) ? 'off' : '' ?>"><?= empty($item['active']) ? 'Archived' : 'Published' ?></div><h3><?= e($item['title']) ?></h3><p><?= e($item['description'] ?? '') ?></p><div class="actions"><a class="btn outline" href="admin.php?series=<?= e($itemSlug) ?>#editor">Edit series</a><a class="btn" href="admin-tests.php?series=<?= e($itemSlug) ?>">Tests &amp; questions</a></div><form method="post" style="margin-top:10px" onsubmit="return confirm('Delete this complete series and hide all of its tests?')"><input type="hidden" name="action" value="delete_series"><input type="hidden" name="series" value="<?= e($itemSlug) ?>"><button class="btn danger" type="submit">Delete series</button></form></article><?php endforeach; ?></div></div>
 <aside id="editor" class="panel"><h2>Edit series</h2><p class="muted">Changes apply to the selected series in the active storage backend.</p><form method="post" enctype="multipart/form-data"><input type="hidden" name="action" value="update_series"><input type="hidden" name="series" value="<?= e($slug) ?>"><label for="parent_group">Parent category</label><input id="parent_group" name="parent_group" value="<?= e((string) ($selected['group'] ?? 'Other exams')) ?>" required><label for="title">Series title</label><input id="title" name="title" value="<?= e((string) $selected['title']) ?>" required><label for="stage">Exam stage</label><input id="stage" name="stage" value="<?= e((string) $selected['stage']) ?>" required><label for="price">Price (INR)</label><input id="price" name="price" type="number" min="0" max="1000000" step="0.01" value="<?= e(number_format(((int) ($selected['price_paise'] ?? 25000)) / 100, 2, '.', '')) ?>" required><label for="description">Description</label><textarea id="description" name="description" required><?= e((string) ($selected['description'] ?? '')) ?></textarea><label>Replace series image (JPG, PNG or WebP, max 3 MB)<input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label><label class="check"><input type="checkbox" name="active" <?= !empty($selected['active']) ? 'checked' : '' ?>> Published in catalog</label><button class="btn" type="submit">Save series</button></form><form method="post" onsubmit="return confirm('Delete this complete series and hide all of its tests?')"><input type="hidden" name="action" value="delete_series"><input type="hidden" name="series" value="<?= e($slug) ?>"><button class="btn danger" type="submit">Delete complete series</button></form></aside></section>
 <section id="progress" class="panel" style="margin-top:18px"><h2>User progress</h2><p class="muted">Learner activity, enrollment, attempts, averages and latest activity from stored records.</p><div class="progress-list"><?php if ($userProgress === []): ?><div class="empty">No registered users yet.</div><?php else: ?><div class="user-row" style="font-weight:700;color:var(--muted)"><span>User</span><span>Status</span><span>Enrolled</span><span>Attempts / score</span><span>Last activity</span><span>Access</span></div><?php foreach ($userProgress as $progress): ?><div class="user-row"><div><span class="user-name"><?= e((string) $progress['name']) ?></span><span class="user-email"><?= e((string) $progress['email']) ?></span></div><div><span class="pill <?= $progress['active'] ? '' : 'off' ?>"><?= $progress['active'] ? 'Active' : 'Inactive' ?></span></div><div><?= (int) $progress['enrolled'] ?> series</div><div><?= (int) $progress['attempts'] ?> / <?= (int) $progress['average'] ?>%</div><div><?= $progress['last'] === null ? 'No attempts yet' : e((string) ($progress['last']['submitted_at'] ?? $progress['last']['created_at'] ?? 'Recent attempt')) ?></div><form method="post" onsubmit="return confirm('Change this user access?')"><input type="hidden" name="action" value="toggle_user"><input type="hidden" name="user_id" value="<?= e((string) ($progress['id'] ?? '')) ?>"><input type="hidden" name="active" value="<?= $progress['active'] ? '1' : '0' ?>"><button class="btn <?= $progress['active'] ? 'danger' : '' ?>" type="submit"><?= $progress['active'] ? 'Deactivate' : 'Activate' ?></button></form></div><?php endforeach; ?><?php endif; ?></div></section>
 </main></body></html>

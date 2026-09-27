@@ -1048,6 +1048,7 @@ exit;
         <h4>Company</h4>
         <ul>
           <li><a href="info.php?page=about">About us</a></li>
+          <li><a href="director.php">Director</a></li>
           <li><a href="info.php?page=contact">Contact us</a></li>
           <li><a href="blog.php">Blog</a></li>
           <li><a href="index.php#faq">Careers</a></li>

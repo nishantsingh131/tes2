@@ -41,10 +41,10 @@ h1{max-width:14ch;margin-bottom:22px;font-size:clamp(2.6rem,5.4vw,4.55rem);color
 .hero-copy{max-width:54ch;margin-bottom:26px;color:rgba(255,255,255,.88);font-size:1.08rem}
 .role-label{display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(255,255,255,.34);border-radius:3px;padding:8px 12px;color:#fff;font-size:.88rem;font-weight:700}
 .role-label::before{width:7px;height:7px;border-radius:50%;background:var(--gold);content:""}
-.portrait-wrap{position:relative;justify-self:end;width:min(100%,560px);padding:20px 18px 14px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.72);box-shadow:0 24px 55px rgba(28,20,62,.26)}
-.portrait-wrap::before{position:absolute;inset:0;content:"";pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 30%,rgba(0,0,0,.04));z-index:1}
-.portrait{position:relative;z-index:2;display:block;width:100%;height:auto;max-height:clamp(420px,44vw,630px);margin:0 auto;object-fit:contain;object-position:center;background:#f7f8fc;border-radius:10px}
-.portrait-caption{position:absolute;right:18px;bottom:18px;z-index:3;max-width:calc(100% - 36px);padding:12px 16px;background:#fff;color:var(--navy);font-size:.84rem;font-weight:700;box-shadow:0 8px 24px rgba(20,23,45,.17)}
+.portrait-wrap{position:relative;justify-self:end;width:min(100%,390px);padding:0 14px 14px 0}
+.portrait-wrap::before{position:absolute;inset:14px 0 0 14px;border:2px solid rgba(255,255,255,.7);content:""}
+.portrait{position:relative;width:100%;height:auto;aspect-ratio:4/5;object-fit:contain;background:#34394a;box-shadow:0 24px 55px rgba(28,20,62,.26)}
+.portrait-caption{position:absolute;right:0;bottom:30px;max-width:calc(100% - 20px);padding:12px 16px;background:#fff;color:var(--navy);font-size:.84rem;font-weight:700;box-shadow:0 8px 24px rgba(20,23,45,.17)}
 .section{padding:82px 0}
 .section.soft{background:var(--paper)}
 .section-heading{max-width:720px;margin:0 auto 44px;text-align:center}
@@ -75,7 +75,7 @@ h2{margin-bottom:14px;color:var(--navy);font-size:clamp(2rem,3.5vw,3rem)}
 .button:hover{background:var(--violet-deep);border-color:var(--violet-deep)}
 .footer{padding:24px 0;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}
 .footer-inner{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
-@media(max-width:900px){.navbar{gap:14px}.nav-links{gap:12px}.nav-links a{font-size:.85rem}.nav-action{padding:8px 10px;font-size:.82rem}.hero-inner{grid-template-columns:1fr;min-height:auto;gap:34px;padding-block:52px 46px}.portrait-wrap{justify-self:center;width:min(100%,500px);padding:16px 12px 12px}.portrait{max-height:clamp(300px,62vw,460px)}.principle{padding-inline:18px}}
+@media(max-width:900px){.navbar{gap:14px}.nav-links{gap:12px}.nav-links a{font-size:.85rem}.nav-action{padding:8px 10px;font-size:.82rem}.hero-inner{grid-template-columns:1fr;min-height:auto;gap:34px;padding-block:52px 46px}.portrait-wrap{justify-self:center;width:min(100%,420px)}.principle{padding-inline:18px}}
 @media(max-width:720px){.container{width:min(100% - 36px,560px)}.navbar{min-height:66px;flex-wrap:wrap;padding-block:10px}.menu-toggle{display:block}.nav-actions .nav-action{display:none}.nav-links{display:none;order:3;flex:0 0 100%;align-items:stretch;gap:0;padding:4px 0 8px;border-top:1px solid var(--line)}.site-header.is-open .nav-links{display:flex;flex-direction:column}.nav-links a{padding:12px 4px;border-bottom:1px solid #edf0f5;font-size:.95rem}.nav-links li:last-child a{border-bottom:0}.hero-copy{font-size:1rem}.section{padding:60px 0}.story-grid{grid-template-columns:1fr;gap:18px}.story-mark{width:max-content}.story-copy h2{max-width:18ch}.principles{grid-template-columns:1fr}.principle,.principle:first-child,.principle:last-child{padding:22px 0;border-right:0;border-bottom:1px solid var(--line)}.principle:last-child{border-bottom:0}.principle-number{margin-bottom:12px}.vision-band{grid-template-columns:1fr;gap:18px}.cta{align-items:flex-start;flex-direction:column;padding-block:32px}}
 @media(max-width:380px){.container{width:calc(100% - 28px)}h1{font-size:2.45rem}.footer-inner{flex-direction:column}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -91,8 +91,7 @@ h2{margin-bottom:14px;color:var(--navy);font-size:clamp(2rem,3.5vw,3rem)}
       <li><a href="index.php#features">Features</a></li>
       <li><a href="index.php#exams">Exams</a></li>
       <li><a href="index.php#faq">FAQ</a></li>
-      <li><a href="info.php?page=about">About Us</a></li>
-      <li><a href="director.php" aria-current="page">Director</a></li>
+      <li><a href="director.php" aria-current="page">About Us</a></li>
       <li><a href="info.php?page=contact">Contact</a></li>
       <?php if ($user !== null): ?><li><a href="student.php">Dashboard</a></li><?php if (($user['role'] ?? '') === 'admin'): ?><li><a href="admin.php">Admin</a></li><?php endif; ?><li><a href="logout.php">Log out</a></li><?php endif; ?>
     </ul>
@@ -109,7 +108,7 @@ h2{margin-bottom:14px;color:var(--navy);font-size:clamp(2rem,3.5vw,3rem)}
         <span class="role-label">Founder &amp; Director</span>
       </div>
       <figure class="portrait-wrap">
-        <img class="portrait" src="img/founder.png" alt="Founder and director of the FullMockTestSeries learning platform" fetchpriority="high" width="1121" height="1403">
+        <img class="portrait" src="img/founder.png" alt="Founder and director of the FullMockTestSeries learning platform" fetchpriority="high" width="768" height="960">
         <figcaption class="portrait-caption">Building with learners in mind</figcaption>
       </figure>
     </div>

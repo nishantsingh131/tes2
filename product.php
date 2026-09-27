@@ -33,16 +33,27 @@ if (preg_match('/^(test|demo|sample|untitled)$/i', trim((string) ($catalog[$slug
 
 $user = current_user();
 $entitlement = course_entitlement($user, $slug);
+$pricePaise = max(0, (int) ($catalog[$slug][5] ?? 0));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'enroll') {
     if ($user === null) {
         header('Location: auth.php?next=' . rawurlencode('product.php?product=' . $slug));
         exit;
     }
+    if ($entitlement['source'] === 'owned') {
+        header('Location: practice.php?product=' . rawurlencode($slug));
+        exit;
+    }
     if ($entitlement['source'] === 'subscription') {
         enroll_user_in_course($user, $slug, 'subscription', (string) ($entitlement['subscription_id'] ?? ''));
-    } else {
+    } elseif ($pricePaise === 0) {
         enroll_user_in_course($user, $slug, 'free');
+    } elseif ($entitlement['source'] === 'paid') {
+        header('Location: checkout.php?plan=' . rawurlencode($slug));
+        exit;
+    } else {
+        header('Location: product.php?product=' . rawurlencode($slug) . '&access=restricted');
+        exit;
     }
     header('Location: product.php?product=' . rawurlencode($slug) . '&enrolled=1');
     exit;
@@ -93,20 +104,23 @@ $justEnrolled = ($_GET['enrolled'] ?? '') === '1';
             <aside class="summary">
                 <h2>Start preparing today</h2>
                 <p><?= e($tests) ?> &bull; <?= e($duration) ?></p>
-                <div class="price"><?= $entitlement['eligible'] && $entitlement['source'] === 'subscription' ? '₹0' : '₹' . number_format($pricePaise / 100, 2) ?></div>
+                <div class="price"><?= $entitlement['eligible'] || $pricePaise === 0 ? '₹0' : '₹' . number_format($pricePaise / 100, 2) ?></div>
                 <?php if ($entitlement['source'] === 'subscription' && !$isEnrolled): ?><p style="color:#e0b34f;font-weight:700">You are a premium user. Included with your active subscription.</p><?php endif; ?>
                 <?php if ($isEnrolled): ?>
                     <a class="btn secondary" href="practice.php?product=<?= e($slug) ?>">Start practice</a>
                 <?php elseif ($user === null): ?>
                     <a class="btn" href="auth.php?next=<?= e(rawurlencode('product.php?product=' . $slug)) ?>">Sign in to enroll</a>
-                <?php else: ?>
+                <?php elseif ($entitlement['source'] === 'subscription' || $pricePaise === 0): ?>
                     <form method="post">
                         <input type="hidden" name="product" value="<?= e($slug) ?>">
                         <input type="hidden" name="action" value="enroll">
-                        <button class="btn" type="submit"><?= $entitlement['source'] === 'subscription' ? 'Enroll free' : 'Enroll in this series' ?></button>
+                        <button class="btn" type="submit">Enroll free</button>
                     </form>
+                <?php elseif ($entitlement['source'] === 'paid'): ?>
+                    <a class="btn" href="checkout.php?plan=<?= e($slug) ?>">Continue to checkout</a>
+                <?php else: ?>
+                    <p style="color:#e0b34f;font-weight:700">Course access is currently unavailable. Contact support for help.</p>
                 <?php endif; ?>
-                <?php if ($entitlement['source'] === 'subscription'): ?><p style="color:#e0b34f;font-weight:700;text-align:center;margin-top:12px">Premium access: no payment required</p><?php elseif ($entitlement['source'] === 'owned'): ?><p style="color:#286447;font-weight:700;text-align:center;margin-top:12px">Already enrolled: no payment required</p><?php elseif ($user !== null): ?><a class="btn" href="checkout.php?plan=<?= e($slug) ?>">Continue to checkout</a><?php endif; ?>
             </aside>
         </section>
 

@@ -15,7 +15,7 @@ function site_header_markup(string $section = 'site', bool $showUser = true): st
     if (is_array($user) && function_exists('user_subscriptions')) foreach (user_subscriptions((string) $user['id']) as $subscription) {
         if (($subscription['status'] ?? '') === 'ACTIVE' && (empty($subscription['expires_at']) || strtotime((string) $subscription['expires_at']) > time())) { $hasPremium = true; break; }
     }
-    $moreLinks = '<a href="index.php#features">Features</a><a href="index.php#faq">FAQ</a><a href="director.php">About Us</a><a href="info.php?page=contact">Contact</a>';
+    $moreLinks = '<a href="index.php#features">Features</a><a href="index.php#faq">FAQ</a><a href="info.php?page=contact">Contact</a>';
     if ($user !== null) {
         if ($hasPremium) $moreLinks .= '<a href="subscription.php">Premium user</a>';
         $moreLinks .= '<a href="student.php">Dashboard</a><a href="blog-submit.php">Write blog</a>';
@@ -24,10 +24,10 @@ function site_header_markup(string $section = 'site', bool $showUser = true): st
     } else {
         $moreLinks .= '<a href="auth.php">Log in</a>';
     }
-    $links = '<a href="index.php">Home</a><a href="index.php#exams">Exams</a><a href="blog.php">Blog</a><a href="subscription.php">Subscriptions</a><details class="nav-more"><summary class="nav-more-toggle">More</summary><div class="nav-more-menu">' . $moreLinks . '</div></details>';
+    $links = '<a href="index.php">Home</a><a href="index.php#exams">Exams</a><a href="blog.php">Blog</a><a href="subscription.php">Subscriptions</a><a href="info.php?page=about">About Us</a><a href="director.php">Director</a><details class="nav-more"><summary class="nav-more-toggle">More</summary><div class="nav-more-menu">' . $moreLinks . '</div></details>';
     if ($showUser && $user !== null) $links .= '<span class="site-user">' . e((string) ($user['name'] ?? '')) . '</span>';
 
-    return '<header class="site-header"><div class="container"><nav id="primary-navigation" aria-label="Primary navigation"><a class="logo" href="index.php"><img class="brand-logo-image" src="img/fullmocktestseries.png" alt="' . e(APP_BRAND_NAME . ' - ' . APP_BRAND_TAGLINE) . '"></a><div class="nav-links" id="primary-links">' . $links . '</div><div class="nav-tools"><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-links">Menu</button></div></nav></div></header>';
+    return '<header class="site-header"><div class="container"><nav id="primary-navigation" aria-label="Primary navigation"><a class="logo" href="index.php"><img class="brand-logo-image" src="img/fullmocktestseries.png" alt="' . e(APP_BRAND_NAME . ' - ' . APP_BRAND_TAGLINE) . '"></a><div class="nav-links" id="primary-links">' . $links . '</div><div class="nav-tools"><button class="nav-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-links">Menu</button></div></nav></div></header>';
 }
 
 function site_footer(string $section = 'site'): void
@@ -42,7 +42,45 @@ function site_homepage_learning_section(): string
 
 function site_homepage_subscription_section(): string
 {
-    return '<section class="section" aria-labelledby="subscription-heading"><div class="container" style="background:#16233f;color:#fff;padding:42px 34px;border-radius:8px;text-align:center"><p style="color:#e0b34f;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.78rem">Flexible access</p><h2 id="subscription-heading" style="color:#fff;margin:10px 0 12px">Unlock more. Pay less.</h2><p style="color:#e7e2d2;max-width:620px;margin:0 auto 24px">Choose a subscription with access to eligible mock tests and practice series. Plans and coverage are configured by the administrator.</p><a class="btn btn-white" href="subscription.php">View subscription plans</a></div></section>';
+    return '
+<section class="section site-premium-showcase-section" aria-labelledby="subscription-heading">
+  <div class="container">
+    <div class="site-premium-showcase">
+      <div class="site-premium-copy">
+        <span class="premium-kicker">Premium access</span>
+        <h2 id="subscription-heading">Unlock smarter practice. Pay less.</h2>
+        <p>Choose a plan that gives you access to the most relevant banking mock tests, live practice trains, and result-driven review tools built for consistent preparation.</p>
+        <div class="premium-cta-group">
+          <a class="btn btn-primary" href="subscription.php">View plans</a>
+          <a class="btn btn-white" href="index.php#exams">Browse exams</a>
+        </div>
+        <ul class="premium-feature-list" aria-label="Premium benefits">
+          <li>Unlimited mock-test access</li>
+          <li>Exam-wise practice coverage</li>
+          <li>Performance tracking</li>
+        </ul>
+      </div>
+
+      <div class="site-premium-visual" aria-hidden="true">
+        <div class="premium-visual-card">
+          <div class="premium-glow premium-glow-one"></div>
+          <div class="premium-glow premium-glow-two"></div>
+          <div class="premium-image-frame">
+            <img src="img/fullmocktestseries.png" alt="FullMockTestSeries brand preview">
+          </div>
+          <div class="premium-mini-card premium-mini-card-top">
+            <span class="mini-label">Live tests</span>
+            <strong>200+ series</strong>
+          </div>
+          <div class="premium-mini-card premium-mini-card-bottom">
+            <span class="mini-label">Learner rating</span>
+            <strong>4.9/5</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>';
 }
 
 function site_homepage_blog_section_markup(): string
@@ -260,7 +298,7 @@ function site_seo_head_markup(string $currentHtml): string
 
 function site_footer_markup(string $section = 'site'): string
 {
-    return '<footer class="site-footer"><div class="site-footer-grid"><section class="footer-brand-column"><a class="footer-brand" href="index.php"><img class="footer-logo-image" src="img/fullmocktestseries.png" alt="' . e(APP_BRAND_NAME) . '"></a><p>' . e(APP_BRAND_TAGLINE) . '</p></section><section class="footer-links"><h2 class="footer-heading">Exams</h2><a href="index.php#exams">SBI</a><a href="index.php#exams">IBPS</a><a href="index.php#exams">RBI</a><a href="index.php#exams">Insurance &amp; finance</a></section><section class="footer-links"><h2 class="footer-heading">Quick Links</h2><a href="auth.php">Login</a><a href="instructions.php?sample=1">Free sample</a><a href="info.php?page=contact">Contact</a><a href="info.php?page=faq">FAQ</a></section><section class="footer-links"><h2 class="footer-heading">Policies</h2><a href="info.php?page=privacy">Privacy</a><a href="info.php?page=terms">Terms</a><a href="info.php?page=refund">Refund policy</a><a href="info.php?page=disclaimer">Disclaimer</a></section></div><div class="site-social-row"><div class="site-social-website"><span class="site-social-label">Website</span><a href="https://fullmocktestseries.com">fullmocktestseries.com</a></div><div class="site-social-block"><span class="site-social-label">Follow us</span><div class="social-links" aria-label="Social media profiles">' . site_social_links_markup() . '</div></div></div><div class="footer-bottom">&copy; ' . date('Y') . ' ' . e(APP_BRAND_NAME) . '. ' . e(APP_BRAND_TAGLINE) . '</div></footer>';
+    return '<footer class="site-footer"><div class="site-footer-grid"><section class="footer-brand-column"><a class="footer-brand" href="index.php"><img class="footer-logo-image" src="img/fullmocktestseries.png" alt="' . e(APP_BRAND_NAME) . '"></a><p>' . e(APP_BRAND_TAGLINE) . '</p></section><section class="footer-links"><h2 class="footer-heading">Exams</h2><a href="index.php#exams">SBI</a><a href="index.php#exams">IBPS</a><a href="index.php#exams">RBI</a><a href="index.php#exams">Insurance &amp; finance</a></section><section class="footer-links"><h2 class="footer-heading">Quick Links</h2><a href="auth.php">Login</a><a href="instructions.php?sample=1">Free sample</a><a href="info.php?page=about">About Us</a><a href="director.php">Director</a><a href="info.php?page=contact">Contact</a><a href="info.php?page=faq">FAQ</a></section><section class="footer-links"><h2 class="footer-heading">Policies</h2><a href="info.php?page=privacy">Privacy</a><a href="info.php?page=terms">Terms</a><a href="info.php?page=refund">Refund policy</a><a href="info.php?page=disclaimer">Disclaimer</a></section></div><div class="site-social-row"><div class="site-social-website"><span class="site-social-label">Website</span><a href="https://fullmocktestseries.com">fullmocktestseries.com</a></div><div class="site-social-block"><span class="site-social-label">Follow us</span><div class="social-links" aria-label="Social media profiles">' . site_social_links_markup() . '</div></div></div><div class="footer-bottom">&copy; ' . date('Y') . ' ' . e(APP_BRAND_NAME) . '. ' . e(APP_BRAND_TAGLINE) . '</div></footer>';
 }
 
 function site_layout_styles(): void
@@ -273,6 +311,7 @@ function site_layout_css(): string
     return <<<'CSS'
 <style>
 html,body{max-width:100%;overflow-x:hidden}
+:root{box-sizing:border-box}
 header.site-header{position:sticky;top:0;z-index:1000;display:block!important;width:100%;max-width:100%;min-width:0;box-sizing:border-box;background:rgba(255,255,255,.97)!important;border-bottom:1px solid #e8e1d3!important;padding:0!important;box-shadow:0 12px 30px rgba(22,35,63,.08);color:#172033}
 header.site-header>.container{width:100%;max-width:1680px;margin:0 auto;padding:0 24px;box-sizing:border-box}
 header.site-header nav#primary-navigation{display:flex;min-height:78px;align-items:center;justify-content:space-between;gap:18px;width:100%}
@@ -286,7 +325,7 @@ header.site-header .nav-more-toggle{display:inline-flex;align-items:center;justi
 header.site-header .nav-more-toggle::-webkit-details-marker{display:none}
 header.site-header .nav-more-toggle::after{content:"";width:6px;height:6px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px)}
 header.site-header .nav-more-toggle:hover,header.site-header .nav-more-toggle:focus-visible{color:#9c3b2e;background:#f9f0ea;outline:2px solid #d7bca5;outline-offset:1px}
-header.site-header .nav-more-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:1001;display:none;min-width:210px;padding:7px;border:1px solid #eadac9;border-radius:8px;background:#fff;box-shadow:0 12px 28px rgba(22,35,63,.14)}
+header.site-header .nav-more-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:1001;display:none;width:min(260px,calc(100vw - 32px));min-width:min(210px,calc(100vw - 32px));max-width:calc(100vw - 32px);box-sizing:border-box;padding:7px;border:1px solid #eadac9;border-radius:8px;background:#fff;box-shadow:0 12px 28px rgba(22,35,63,.14)}
 header.site-header .nav-more[open]>.nav-more-menu{display:grid}
 header.site-header .nav-links .nav-more-menu a{display:flex;justify-content:flex-start;min-height:40px;padding:10px 12px;border-radius:5px}
 header.site-header .site-user{display:inline-flex;align-items:center;flex:0 0 auto;padding:7px 9px;border:1px solid #eadac9;background:#fffaf5;border-radius:999px;color:#9c3b2e;font-size:.82rem;font-weight:700;white-space:nowrap}
@@ -305,6 +344,32 @@ header.site-header .nav-toggle:hover,header.site-header .nav-toggle:focus-visibl
 .footer-links a{color:#dfe6f1;text-decoration:none;font-size:.98rem;line-height:1.55;overflow-wrap:anywhere;padding:2px 0;transition:color .18s ease}
 .footer-links a:hover,.footer-links a:focus-visible{color:#f8d68d;text-decoration:underline;text-underline-offset:3px}
 .study-note{width:min(72ch,100%);margin:18px auto 24px;color:#4e5663;font-size:1rem;line-height:1.7;text-align:center}
+.site-premium-showcase-section{padding-top:18px;padding-bottom:10px}
+.site-premium-showcase{position:relative;display:grid;grid-template-columns:1.08fr .92fr;align-items:center;gap:38px;padding:34px 34px;border:1px solid rgba(188,163,125,.45);border-radius:28px;background:linear-gradient(135deg,#17213d 0%,#0d1529 42%,#1a2346 100%);box-shadow:0 22px 60px rgba(14,20,34,.22);overflow:hidden}
+.site-premium-showcase::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top left,rgba(255,202,102,.25),transparent 28%),radial-gradient(circle at bottom right,rgba(80,148,255,.22),transparent 34%);pointer-events:none}
+.site-premium-copy,.site-premium-visual{position:relative;z-index:1}
+.site-premium-copy{padding:10px 8px 10px 4px;color:#edf3ff}
+.premium-kicker{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(255,201,117,.14);border:1px solid rgba(255,201,117,.25);color:#ffd78d;font-size:.75rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.site-premium-copy h2{margin:18px 0 12px;color:#fff;font-size:clamp(2rem,4vw,3.4rem);line-height:1.08;letter-spacing:-.04em}
+.site-premium-copy p{max-width:540px;margin:0;color:#d9e1f0;font-size:1.04rem;line-height:1.7}
+.premium-cta-group{display:flex;flex-wrap:wrap;gap:14px;margin-top:24px}
+.premium-feature-list{display:flex;flex-wrap:wrap;gap:12px 18px;list-style:none;padding:0;margin:22px 0 0;color:#ebf1ff;font-size:.96rem;font-weight:600}
+.premium-feature-list li{position:relative;padding-left:22px;color:#e8edf8}
+.premium-feature-list li::before{content:"";position:absolute;left:0;top:9px;width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,#ffd88b,#e7a64a);box-shadow:0 0 12px rgba(255,205,124,.7)}
+.site-premium-visual{display:flex;justify-content:center;align-items:center;padding:8px 0}
+.premium-visual-card{position:relative;width:min(100%,560px);aspect-ratio:1.1;display:flex;align-items:center;justify-content:center;border-radius:30px;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(166,177,214,.08));border:1px solid rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 26px 40px rgba(7,11,20,.28);overflow:hidden;animation:floatCard 5.5s ease-in-out infinite}
+.premium-glow{position:absolute;border-radius:50%;filter:blur(8px);opacity:.8}
+.premium-glow-one{width:180px;height:180px;background:rgba(255,188,92,.3);top:18%;left:12%;animation:pulseGlow 4s ease-in-out infinite}
+.premium-glow-two{width:220px;height:220px;background:rgba(62,128,255,.25);bottom:10%;right:10%;animation:pulseGlow 5.2s ease-in-out infinite reverse}
+.premium-image-frame{position:relative;z-index:2;width:min(82%,420px);padding:18px 16px;border-radius:26px;background:linear-gradient(145deg,rgba(15,24,44,.8),rgba(26,38,68,.92));border:1px solid rgba(255,255,255,.12);box-shadow:0 16px 35px rgba(12,15,24,.32);backdrop-filter:blur(8px)}
+.premium-image-frame img{display:block;width:100%;height:auto;border-radius:14px;background:#fff}
+.premium-mini-card{position:absolute;z-index:3;display:grid;gap:2px;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(13,20,33,.78);backdrop-filter:blur(10px);box-shadow:0 10px 25px rgba(9,13,20,.25);color:#fff;animation:floatCard 6s ease-in-out infinite}
+.premium-mini-card-top{top:14%;right:8%}
+.premium-mini-card-bottom{bottom:10%;left:8%;animation-delay:.8s}
+.mini-label{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#c9d6ef}
+.premium-mini-card strong{font-size:1.05rem;color:#fff}
+@keyframes floatCard{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulseGlow{0%,100%{transform:scale(.96);opacity:.55}50%{transform:scale(1.08);opacity:1}}
 .dashboard-shell{display:grid!important;grid-template-columns:250px minmax(0,1fr);gap:28px;align-items:start}
 .dashboard-sidebar{background:#fff;border:1px solid #e4e7ef;padding:20px;position:sticky;top:100px;border-radius:14px;box-shadow:0 14px 30px rgba(22,35,63,.04)}
 .dashboard-sidebar h2{font:700 1.1rem Georgia,serif;color:#16233f;margin:0 0 14px}
@@ -330,6 +395,26 @@ a.social-link:hover,a.social-link:focus-visible{transform:translateY(-2px);borde
 @media(max-width:700px){.dashboard-shell{display:block!important}.dashboard-sidebar{position:static;margin-bottom:24px}.dashboard-sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 8px}.dashboard-sidebar nav a{padding:9px 4px}}
 @media(max-width:850px){.site-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:36px 28px}.site-footer p{margin-top:18px}}
 @media(max-width:520px){.site-footer{padding:38px 22px 18px}.site-footer-grid{grid-template-columns:minmax(0,1fr);gap:28px}.footer-links{gap:10px}.footer-heading{margin-bottom:6px}.site-social-row{align-items:flex-start;flex-direction:column;margin-top:28px;padding-top:20px}.social-links{gap:8px}.footer-bottom{margin-top:32px;padding-top:18px}}
+*,*::before,*::after{box-sizing:inherit}
+@media(max-width:1000px){
+    header.site-header>.container{padding:0 16px}
+    header.site-header nav#primary-navigation{display:grid!important;grid-template-columns:minmax(0,1fr) 44px;grid-template-rows:68px auto;min-height:68px;align-items:center;justify-content:normal;gap:0 8px}
+    header.site-header .logo{grid-column:1;grid-row:1;width:100%;max-width:100%;min-width:0;justify-self:start;justify-content:flex-start!important;padding:0}
+    header.site-header .brand-logo-image{width:min(190px,100%);height:60px}
+    header.site-header .nav-tools{grid-column:2;grid-row:1;display:flex;align-items:center;justify-self:end;margin:0}
+    header.site-header .nav-toggle{display:grid;width:44px;height:44px;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:#1d2433;font-size:0}
+    header.site-header .nav-toggle::before{content:"";width:22px;height:14px;background:linear-gradient(currentColor 0 0) 0 0/100% 2px no-repeat,linear-gradient(currentColor 0 0) 0 6px/100% 2px no-repeat,linear-gradient(currentColor 0 0) 0 12px/100% 2px no-repeat}
+    header.site-header nav#primary-navigation.is-open .nav-toggle::before{width:20px;height:20px;background:linear-gradient(45deg,transparent 46%,currentColor 47% 53%,transparent 54%),linear-gradient(-45deg,transparent 46%,currentColor 47% 53%,transparent 54%)}
+    header.site-header .nav-links{grid-column:1/-1;grid-row:2;display:none!important;flex:none;width:100%;min-width:0;align-items:stretch;flex-direction:column;justify-content:flex-start;gap:0;padding:8px 0 12px;white-space:normal}
+    header.site-header nav#primary-navigation.is-open .nav-links{display:flex!important}
+    header.site-header .nav-links>a{display:flex;justify-content:flex-start;width:100%;min-height:44px;padding:12px 10px;border-bottom:1px solid #f0e6d9;border-radius:6px;white-space:normal;overflow-wrap:anywhere}
+    header.site-header .nav-more{position:relative;align-self:stretch;width:100%;min-width:0;flex:0 0 auto;box-sizing:border-box}
+    header.site-header .nav-more-toggle{display:flex;justify-content:space-between;width:100%;max-width:100%;min-width:0;min-height:44px;box-sizing:border-box;padding:12px 10px;border-radius:6px;border-bottom:1px solid #f0e6d9}
+    header.site-header .nav-more-menu{position:static;top:auto;right:auto;z-index:auto;display:none;width:100%;min-width:0;max-width:100%;max-height:min(55vh,360px);overflow-y:auto;box-sizing:border-box;margin:6px 0 0;padding:8px;border:1px solid #eadac9;border-radius:8px;background:#fbf8f3;box-shadow:none}
+    header.site-header .nav-links .site-user{display:flex;max-width:100%;padding:10px 12px;margin-top:4px;white-space:normal;overflow-wrap:anywhere;border-radius:8px}
+}
+@media(max-width:980px){.site-premium-showcase{grid-template-columns:1fr;padding:28px 22px}.site-premium-copy{padding:8px 0}.site-premium-copy h2{text-align:left}.site-premium-copy p{max-width:100%}.premium-feature-list{gap:10px 16px}.premium-cta-group{justify-content:flex-start}}
+@media(max-width:560px){.site-premium-showcase{padding:22px 18px;border-radius:22px}.site-premium-copy h2{font-size:2.2rem}.premium-cta-group{flex-direction:column;align-items:stretch}.premium-cta-group .btn{width:100%;justify-content:center}.premium-feature-list{display:grid;grid-template-columns:1fr;gap:10px}.premium-mini-card{padding:8px 10px}.premium-mini-card strong{font-size:.96rem}.premium-image-frame{width:min(90%,380px)}}
 </style>
 CSS;
 }
@@ -380,6 +465,10 @@ function site_layout_output_filter(string $html): string
     $html = str_replace('subscription-checkout.php?plan=', 'subscription-payment.php?plan=', $html);
     $html = str_replace('â‚¹', '₹', $html);
 
+    if ($script === 'instructions.php') {
+        $instructionMobileCss = '<style>body{min-width:0;overflow-x:hidden}.wrap{min-width:0}h1{overflow-wrap:anywhere;word-break:normal}@media(max-width:600px){.wrap{width:calc(100% - 32px);padding:32px 0}.panel{min-width:0;padding:20px 16px}h1{font-size:2rem;line-height:1.18}.rule{overflow-wrap:anywhere}.btn{max-width:100%;white-space:normal}.back{display:block;margin:16px 0 0}}</style>';
+        $html = preg_replace('/<\/head>/i', $instructionMobileCss . '</head>', $html, 1) ?? $html;
+    }
     $header = site_header_markup();
     $footerMarkup = site_footer_markup();
 
@@ -403,7 +492,7 @@ function site_layout_output_filter(string $html): string
         $timerPlacement = '';
         $confirmation = '';
     }
-    $navigationScript = '<script>(()=>{const navigation=document.getElementById("primary-navigation");const toggle=navigation?.querySelector(".nav-toggle");const moreMenu=navigation?.querySelector(".nav-more");if(!navigation||!toggle||toggle.dataset.navigationBound==="true")return;toggle.dataset.navigationBound="true";const close=()=>{navigation.classList.remove("is-open");toggle.setAttribute("aria-expanded","false");toggle.textContent="Menu";};const closeMore=()=>{if(moreMenu)moreMenu.open=false;};toggle.addEventListener("click",()=>{closeMore();const isOpen=navigation.classList.toggle("is-open");toggle.setAttribute("aria-expanded",String(isOpen));toggle.textContent=isOpen?"Close":"Menu";});if(moreMenu){moreMenu.querySelectorAll("a").forEach(link=>link.addEventListener("click",()=>{closeMore();close();}));document.addEventListener("click",event=>{if(!moreMenu.contains(event.target))closeMore();});}navigation.querySelectorAll(".nav-links>a").forEach(link=>link.addEventListener("click",close));document.addEventListener("keydown",event=>{if(event.key==="Escape"){closeMore();close();}});})();</script>';
+    $navigationScript = '<script>(()=>{const navigation=document.getElementById("primary-navigation");if(!navigation)return;const toggle=navigation.querySelector(".nav-toggle");const moreMenu=navigation.querySelector(".nav-more");const moreToggle=moreMenu?.querySelector(".nav-more-toggle");const closeMore=()=>{if(moreMenu){moreMenu.open=false;moreToggle?.setAttribute("aria-expanded","false");}};if(moreMenu&&moreToggle&&moreToggle.dataset.moreToggleBound!=="true"){moreToggle.dataset.moreToggleBound="true";moreToggle.setAttribute("aria-expanded",String(moreMenu.open));moreToggle.addEventListener("click",event=>{event.preventDefault();moreMenu.open=!moreMenu.open;moreToggle.setAttribute("aria-expanded",String(moreMenu.open));});moreMenu.querySelectorAll("a").forEach(link=>link.addEventListener("click",closeMore));document.addEventListener("click",event=>{if(!moreMenu.contains(event.target))closeMore();});document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMore();});}if(toggle&&toggle.dataset.moreCloseBound!=="true"){toggle.dataset.moreCloseBound="true";toggle.addEventListener("click",closeMore);}if(!toggle||toggle.dataset.navigationBound==="true")return;toggle.dataset.navigationBound="true";const close=()=>{navigation.classList.remove("is-open");toggle.setAttribute("aria-expanded","false");toggle.setAttribute("aria-label","Open navigation menu");};toggle.addEventListener("click",()=>{closeMore();const isOpen=navigation.classList.toggle("is-open");toggle.setAttribute("aria-expanded",String(isOpen));toggle.setAttribute("aria-label",isOpen?"Close navigation menu":"Open navigation menu");});navigation.querySelectorAll(".nav-links>a").forEach(link=>link.addEventListener("click",close));document.addEventListener("keydown",event=>{if(event.key==="Escape"){closeMore();close();}});})();</script>';
     $adminControlScript = $script === 'admin-course-control.php' ? '<script>document.querySelectorAll(".user-card").forEach(card=>{const userId=card.querySelector("input[name=user_id]")?.value;if(!userId)return;const link=document.createElement("a");link.href="admin-user-detail.php?user="+encodeURIComponent(userId);link.textContent="View full user details";link.className="btn outline";link.style.marginTop="12px";card.querySelector(".user-head")?.appendChild(link);if(card.textContent.includes("Premium:")){const premium=document.createElement("a");premium.href="admin-subscription-control.php?user="+encodeURIComponent(userId);premium.textContent="Manage premium";premium.className="btn danger";premium.style.margin="12px 0 0 8px";card.querySelector(".user-head")?.appendChild(premium);}if(!card.querySelector(".course-table")&&card.textContent.includes("Premium:")){const note=document.createElement("p");note.className="muted";note.textContent="Bank Premium covers every published banking course unless individually revoked. Use full user details to manage course access.";card.querySelector(".user-head")?.after(note);}});</script>' : '';
     $adminDetailScript = $script === 'admin-user-detail.php' ? '<script>const premiumBox=document.querySelector(".premium");const userId=new URLSearchParams(location.search).get("user");if(premiumBox&&userId){const link=document.createElement("a");link.href="admin-subscription-control.php?user="+encodeURIComponent(userId);link.textContent="Manage premium status";link.className="btn";link.style.marginTop="12px";premiumBox.appendChild(link);}</script>' : '';
     $adminAccountScript = $script === 'admin-user-detail.php' ? '<script>const detailUserId=new URLSearchParams(location.search).get("user");const detailPanel=document.querySelector("main .panel");if(detailUserId&&detailPanel){const link=document.createElement("a");link.href="admin-account-control.php?user="+encodeURIComponent(detailUserId);link.textContent="Deactivate user and remove credentials";link.className="btn";link.style.background="#70251c";link.style.marginTop="18px";detailPanel.parentElement?.appendChild(link);}</script>' : '';

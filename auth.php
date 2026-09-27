@@ -80,6 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <style>
 :root{--navy:#16233f;--maroon:#9c3b2e;--paper:#efece2;--card:#f7f5ec;--ink:#1c1a15;--muted:#625e50;--line:#cfc7ac;--gold:#a97a24}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);font-family:Arial,sans-serif;display:flex;flex-direction:column;align-items:stretch;padding:0}.shell{width:min(440px,calc(100% - 40px));margin:56px auto}.brand{color:var(--navy);font:700 1.6rem Georgia,serif;text-decoration:none;display:inline-block;margin-bottom:28px}.card{background:var(--card);border:1px solid var(--line);padding:32px;box-shadow:0 18px 40px rgba(22,35,63,.12)}h1{font:600 2rem Georgia,serif;color:var(--navy);margin:0 0 8px}p{color:var(--muted);margin:0 0 24px}.error{background:#f7ded8;border:1px solid #c97968;padding:10px 12px;margin-bottom:18px;color:#70251c;font-size:.9rem}label{display:block;font-size:.85rem;font-weight:700;margin:16px 0 6px}input{width:100%;padding:12px;border:1px solid var(--line);background:#fffdf7;font:inherit}button{width:100%;margin-top:24px;padding:13px;background:var(--maroon);color:white;border:0;font-weight:700;cursor:pointer}button:hover{background:#832f24}.switch{margin:22px 0 0;text-align:center;font-size:.9rem}.switch a{color:var(--maroon);font-weight:700}
 </style>
+<style>
+@media(max-width:480px){.shell{width:calc(100% - 32px);margin:24px auto}.card{padding:22px 18px}h1{font-size:1.8rem;line-height:1.15;overflow-wrap:anywhere}}
+</style>
 </head>
 <body>
 <main class="shell">
