@@ -475,7 +475,8 @@ function site_layout_output_filter(string $html): string
     $seoHead = site_seo_head_markup($html);
     $html = preg_replace('/<title\b[^>]*>.*?<\/title>/is', '', $html, 1) ?? $html;
     $favicon = '<link rel="icon" type="image/png" href="/img/fullmocktestseries.png">';
-    $html = preg_replace('/<\/head>/i', site_layout_css() . $favicon . $seoHead . '</head>', $html, 1) ?? $html;
+    $googleAnalytics = '<script async src="https://www.googletagmanager.com/gtag/js?id=G-9VBBPWLJEJ"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag(\'js\',new Date());gtag(\'config\',\'G-9VBBPWLJEJ\');</script>';
+    $html = preg_replace('/<\/head>/i', site_layout_css() . $favicon . $seoHead . $googleAnalytics . '</head>', $html, 1) ?? $html;
     if ($script === 'result.php') $html = preg_replace('/<\/head>/i', '<style>@media(max-width:600px){.panel .btn{display:block;width:100%;margin:0 0 10px;text-align:center}.panel .btn:last-child{margin-bottom:0}}</style></head>', $html, 1) ?? $html;
     $headerCount = 0;
     if ($script !== 'attempt.php') {

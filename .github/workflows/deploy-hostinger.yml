@@ -42,4 +42,3 @@ jobs:
             **/uploads/**
             **/migrations/**
             **/scripts/**
-            **/tests/asa/**
