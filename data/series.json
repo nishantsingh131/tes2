@@ -5,7 +5,8 @@
         "title": "SBI PO",
         "stage": "Prelims & Mains",
         "description": "Officer-level practice for reasoning, data analysis, English and banking awareness.",
-        "active": false,
+        "group": "SBI",
+        "active": true,
         "created_at": "2026-09-25T17:19:19+00:00"
     },
     {
@@ -14,7 +15,8 @@
         "title": "SBI Clerk",
         "stage": "Prelims & Mains",
         "description": "Junior associate practice covering speed, accuracy and customer-facing banking aptitude.",
-        "active": false,
+        "group": "SBI",
+        "active": true,
         "created_at": "2026-09-25T17:19:27+00:00"
     },
     {
@@ -23,7 +25,8 @@
         "title": "SBI CBO",
         "stage": "Online Exam",
         "description": "Circle-based officer practice with banking, reasoning, English and professional knowledge.",
-        "active": false,
+        "group": "SBI",
+        "active": true,
         "created_at": "2026-09-25T17:19:42+00:00"
     },
     {
@@ -50,7 +53,8 @@
         "title": "SBI Apprentice",
         "stage": "Online Exam",
         "description": "Apprentice-level practice for general awareness, quantitative aptitude and local language readiness.",
-        "active": false,
+        "group": "SBI",
+        "active": true,
         "created_at": "2026-09-25T17:24:32+00:00"
     },
     {

@@ -91,7 +91,8 @@ h2{margin-bottom:14px;color:var(--navy);font-size:clamp(2rem,3.5vw,3rem)}
       <li><a href="index.php#features">Features</a></li>
       <li><a href="index.php#exams">Exams</a></li>
       <li><a href="index.php#faq">FAQ</a></li>
-      <li><a href="director.php" aria-current="page">About Us</a></li>
+      <li><a href="info.php?page=about">About Us</a></li>
+      <li><a href="director.php" aria-current="page">Director</a></li>
       <li><a href="info.php?page=contact">Contact</a></li>
       <?php if ($user !== null): ?><li><a href="student.php">Dashboard</a></li><?php if (($user['role'] ?? '') === 'admin'): ?><li><a href="admin.php">Admin</a></li><?php endif; ?><li><a href="logout.php">Log out</a></li><?php endif; ?>
     </ul>
