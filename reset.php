@@ -81,6 +81,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reset password | RankSetu</title>
 <style>body{font-family:Arial,Helvetica,sans-serif;background:#f6f6f6;padding:30px}main{max-width:520px;margin:0 auto}label{display:block;margin:14px 0 6px}input{width:100%;padding:10px;border:1px solid #ccc}button{margin-top:14px;padding:10px 14px;background:#16233f;color:#fff;border:0}div.err{background:#f7ded8;border:1px solid #c97968;padding:10px;margin-bottom:8px;color:#70251c}</style>
+<style>
+html,body{min-width:0;max-width:100%;overflow-x:hidden}
+body{min-height:100vh;margin:0;padding:24px}
+main{width:100%;max-width:520px;margin:0 auto}
+h1{font-size:2rem;line-height:1.15;overflow-wrap:anywhere}
+form,input,button{max-width:100%}
+input{box-sizing:border-box;min-height:48px}
+button{width:100%;min-height:48px;cursor:pointer}
+.err{line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:380px){body{padding:16px}}
+</style>
 </head>
 <body>
 <main>

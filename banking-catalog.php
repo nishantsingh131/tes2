@@ -38,7 +38,13 @@ function banking_catalog(): array
 function banking_labels(): array
 {
     $catalog = banking_catalog();
-    return array_combine(array_keys($catalog), array_column($catalog, 'title')) ?: [];
+    $labels = array_combine(array_keys($catalog), array_column($catalog, 'title')) ?: [];
+    if (function_exists('series_records')) {
+        foreach (series_records() as $record) {
+            if (isset($record['slug'], $record['title'])) $labels[(string) $record['slug']] = (string) $record['title'];
+        }
+    }
+    return $labels;
 }
 
 function banking_questions(string $slug): array

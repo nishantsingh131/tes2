@@ -7,6 +7,11 @@ $plans=subscription_plans(); $selectedSlug=(string)($_GET['plan']??$_POST['origi
 $error=''; $notice=(string)($_GET['notice']??'');
 if($_SERVER['REQUEST_METHOD']==='POST') try {
     $action=(string)($_POST['action']??'');
+    if($action==='save'&&$selected!==null){
+        $_POST['covered_courses']??=implode("\n",(array)($selected['covered_courses']??[]));
+        $_POST['covered_groups']??=implode("\n",(array)($selected['covered_groups']??[]));
+        if(!array_key_exists('all_access',$_POST)&&!empty($selected['all_access']))$_POST['all_access']='1';
+    }
     if($action==='delete'){ $slug=(string)($_POST['slug']??''); $plans=array_values(array_filter($plans,static fn(array $p):bool=>($p['slug']??'')!==$slug)); save_subscription_plans($plans); header('Location: admin-subscriptions.php?notice=Plan+archived'); exit; }
     if($action==='save') {
         $name=trim((string)($_POST['name']??'')); $slug=slugify((string)($_POST['slug']??$name)); $price=price_to_paise((string)($_POST['price']??'0')); $original=price_to_paise((string)($_POST['original_price']??$_POST['price']??'0')); $duration=max(1,(int)($_POST['duration']??30)); $unit=in_array($_POST['duration_unit']??'day',['day','month','year'],true)?(string)$_POST['duration_unit']:'day';

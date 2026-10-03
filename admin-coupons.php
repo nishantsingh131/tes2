@@ -10,7 +10,7 @@ $selected = null;
 foreach ($allCoupons as $coupon) if (strtoupper((string) ($coupon['code'] ?? '')) === $selectedCode) { $selected = $coupon; break; }
 $error = '';
 $notice = (string) ($_GET['notice'] ?? '');
-$products = ['all' => 'All banking series'];
+$products = ['all' => 'All government exam series'];
 foreach (published_banking_catalog() as $slug => $series) $products[$slug] = $series['title'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

@@ -2,13 +2,20 @@
 
 declare(strict_types=1);
 
-// Usage: php scripts/import_json_to_mysql.php
-// Optional environment variables: DB_DSN, DB_USER, DB_PASS.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
 
-$dsn = getenv('DB_DSN') ?: 'mysql:host=127.0.0.1;dbname=tes2;charset=utf8mb4';
-$user = getenv('DB_USER') ?: 'root';
-$pass = getenv('DB_PASS') ?: '';
 $base = dirname(__DIR__);
+$hostingerConfig = $base . DIRECTORY_SEPARATOR . 'hostinger-config.php';
+if (is_file($hostingerConfig)) require_once $hostingerConfig;
+
+// Usage: php scripts/import_json_to_mysql.php
+// Environment variables take precedence over the private Hostinger config.
+$dsn = getenv('DB_DSN') ?: (defined('HOSTINGER_DB_DSN') ? HOSTINGER_DB_DSN : 'mysql:host=127.0.0.1;dbname=tes2;charset=utf8mb4');
+$user = getenv('DB_USER') ?: (defined('HOSTINGER_DB_USER') ? HOSTINGER_DB_USER : 'root');
+$pass = getenv('DB_PASS') ?: (defined('HOSTINGER_DB_PASS') ? HOSTINGER_DB_PASS : '');
 
 function read_json(string $path): array
 {
@@ -64,6 +71,7 @@ try {
         $userStmt->execute([':id' => $record['id'], ':name' => $record['name'] ?? 'Student', ':email' => strtolower($record['email']), ':password' => $record['password'] ?? password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT), ':role' => ($record['role'] ?? 'student') === 'admin' ? 'admin' : 'student', ':active' => !empty($record['active']) ? 1 : 0, ':created_at' => sql_datetime($record['created_at'] ?? null)]);
         foreach (array_unique((array) ($record['enrolled'] ?? [])) as $slug) if (isset($seriesIds[$slug])) $enrollStmt->execute([':user_id' => $record['id'], ':series_id' => $seriesIds[$slug], ':source' => 'free', ':enrolled_at' => sql_datetime($record['created_at'] ?? null)]);
         foreach ((array) ($record['orders'] ?? []) as $saved) {
+            if (($saved['provider'] ?? '') === 'demo') continue;
             $product = (string) ($saved['product'] ?? $saved['plan'] ?? '');
             $amount = (int) round(((float) ($saved['amount'] ?? 0)) * 100);
             $original = (int) round(((float) ($saved['original_amount'] ?? $saved['amount'] ?? 0)) * 100);
@@ -76,7 +84,7 @@ try {
 
     $testIds = [];
     $testStmt = $pdo->prepare('INSERT INTO tests (id,series_id,test_key,title,duration_minutes,active,created_at) VALUES (:id,:series_id,:test_key,:title,:duration_minutes,:active,:created_at) ON DUPLICATE KEY UPDATE title=VALUES(title),duration_minutes=VALUES(duration_minutes),active=VALUES(active)');
-    $questionStmt = $pdo->prepare('INSERT INTO questions (id,test_id,position,question_text,topic,correct_option) VALUES (:id,:test_id,:position,:text,:topic,:answer) ON DUPLICATE KEY UPDATE question_text=VALUES(question_text),topic=VALUES(topic),correct_option=VALUES(correct_option)');
+    $questionStmt = $pdo->prepare('INSERT INTO questions (id,test_id,position,question_text,topic,section_title,direction_text,correct_option) VALUES (:id,:test_id,:position,:text,:topic,:section,:direction,:answer) ON DUPLICATE KEY UPDATE question_text=VALUES(question_text),topic=VALUES(topic),section_title=VALUES(section_title),direction_text=VALUES(direction_text),correct_option=VALUES(correct_option)');
     $optionStmt = $pdo->prepare('INSERT INTO question_options (question_id,position,option_text) VALUES (:question_id,:position,:text) ON DUPLICATE KEY UPDATE option_text=VALUES(option_text)');
     foreach (banking_catalog() as $slug => $series) foreach (banking_test_sets($slug, 15, 60) as $testKey => $test) {
         $testId = 'test-' . substr(hash('sha256', $slug . ':' . $testKey), 0, 20);
@@ -84,7 +92,7 @@ try {
         $testStmt->execute([':id' => $testId, ':series_id' => $seriesIds[$slug], ':test_key' => $testKey, ':title' => $test['title'], ':duration_minutes' => $test['duration_minutes'], ':active' => 1, ':created_at' => date('Y-m-d H:i:s')]);
         foreach ($test['questions'] as $position => $question) {
             $questionId = 'question-' . substr(hash('sha256', $slug . ':' . $testKey . ':' . $position), 0, 20);
-            $questionStmt->execute([':id' => $questionId, ':test_id' => $testId, ':position' => $position, ':text' => $question['q'], ':topic' => $question['topic'], ':answer' => $question['answer']]);
+            $questionStmt->execute([':id' => $questionId, ':test_id' => $testId, ':position' => $position, ':text' => $question['q'], ':topic' => $question['topic'], ':section' => $question['section'] ?? '', ':direction' => $question['direction'] ?? null, ':answer' => $question['answer']]);
             foreach ($question['options'] as $optionPosition => $option) $optionStmt->execute([':question_id' => $questionId, ':position' => $optionPosition, ':text' => $option]);
         }
     }
@@ -98,7 +106,7 @@ try {
         $testStmt->execute([':id' => $testId, ':series_id' => $seriesIds[$slug], ':test_key' => $testKey, ':title' => $test['title'] ?? strtoupper($testKey), ':duration_minutes' => (int) ($test['duration_minutes'] ?? 10), ':active' => 1, ':created_at' => date('Y-m-d H:i:s')]);
         foreach ((array) ($test['questions'] ?? []) as $position => $question) {
             $questionId = 'question-' . substr(hash('sha256', $slug . ':' . $testKey . ':' . $position), 0, 20);
-            $questionStmt->execute([':id' => $questionId, ':test_id' => $testId, ':position' => $position, ':text' => $question['q'] ?? '', ':topic' => $question['topic'] ?? '', ':answer' => (int) ($question['answer'] ?? 0)]);
+            $questionStmt->execute([':id' => $questionId, ':test_id' => $testId, ':position' => $position, ':text' => $question['q'] ?? '', ':topic' => $question['topic'] ?? '', ':section' => $question['section'] ?? '', ':direction' => $question['direction'] ?? null, ':answer' => (int) ($question['answer'] ?? 0)]);
             foreach ((array) ($question['options'] ?? []) as $optionPosition => $option) $optionStmt->execute([':question_id' => $questionId, ':position' => $optionPosition, ':text' => $option]);
         }
     }

@@ -8,7 +8,7 @@ $target = null;
 foreach (users() as $candidate) if (($candidate['id'] ?? '') === $userId) { $target = $candidate; break; }
 if ($target === null) { http_response_code(404); exit('User not found.'); }
 $active = null;
-foreach (user_subscriptions($userId) as $subscription) if (($subscription['status'] ?? '') === 'ACTIVE' && (empty($subscription['expires_at']) || strtotime((string) $subscription['expires_at']) > time())) { $active = $subscription; break; }
+foreach (user_subscriptions($userId) as $subscription) if (subscription_is_current($subscription)) { $active = $subscription; break; }
 $action = (string) ($_POST['action'] ?? '');
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($action, ['suspend','restore'], true)) {

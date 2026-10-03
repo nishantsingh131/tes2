@@ -40,7 +40,9 @@ function db_pass(): string
 
 function db_enabled(): bool
 {
-    return ((string) (getenv('USE_DB') ?: (defined('HOSTINGER_USE_DB') ? HOSTINGER_USE_DB : ''))) === '1' && db_dsn() !== '';
+    $useDb = getenv('USE_DB');
+    if ($useDb === false) $useDb = defined('HOSTINGER_USE_DB') ? HOSTINGER_USE_DB : '';
+    return (string) $useDb === '1' && db_dsn() !== '';
 }
 
 function app_base_url(): string
@@ -179,17 +181,17 @@ function store_contact_message(array $message): void
 
 function razorpay_key_id(): string
 {
-    return (string) (getenv('RAZORPAY_KEY_ID') ?: '');
+    return (string) (getenv('RAZORPAY_KEY_ID') ?: (defined('HOSTINGER_RAZORPAY_KEY_ID') ? HOSTINGER_RAZORPAY_KEY_ID : ''));
 }
 
 function razorpay_key_secret(): string
 {
-    return (string) (getenv('RAZORPAY_KEY_SECRET') ?: '');
+    return (string) (getenv('RAZORPAY_KEY_SECRET') ?: (defined('HOSTINGER_RAZORPAY_KEY_SECRET') ? HOSTINGER_RAZORPAY_KEY_SECRET : ''));
 }
 
-function payment_mode(): string
+function razorpay_is_configured(): bool
 {
-    return strtolower((string) (getenv('PAYMENT_MODE') ?: 'demo'));
+    return str_starts_with(razorpay_key_id(), 'rzp_live_') && razorpay_key_secret() !== '';
 }
 
 function coupons(): array
@@ -326,7 +328,74 @@ function user_subscriptions(string $userId): array
         return $rows;
     }
     $all = file_exists(SUBSCRIPTION_FILE) ? json_decode((string)file_get_contents(SUBSCRIPTION_FILE), true) : [];
-    return is_array($all) ? array_values(array_filter($all, static fn(array $row): bool => ($row['user_id'] ?? '') === $userId)) : [];
+    if (!is_array($all)) return [];
+    $plansById = [];
+    foreach (subscription_plans() as $plan) $plansById[(string) ($plan['id'] ?? '')] = $plan;
+    $rows = array_values(array_filter($all, static fn(array $row): bool => ($row['user_id'] ?? '') === $userId));
+    foreach ($rows as &$row) {
+        $plan = $plansById[(string) ($row['plan_id'] ?? '')] ?? null;
+        if ($plan === null) continue;
+        $row['plan_name'] = (string) ($plan['name'] ?? $row['plan_name'] ?? '');
+        $row['plan_slug'] = (string) ($plan['slug'] ?? $row['plan_slug'] ?? '');
+        $row['all_access'] = !empty($plan['all_access']);
+        $row['covered_courses'] = (array) ($plan['covered_courses'] ?? []);
+        $row['covered_groups'] = (array) ($plan['covered_groups'] ?? []);
+    }
+    unset($row);
+    return $rows;
+}
+
+function subscription_is_current(array $subscription, ?int $now = null): bool
+{
+    if (($subscription['status'] ?? '') !== 'ACTIVE') return false;
+    $now ??= time();
+    $startAt = $subscription['start_at'] ?? null;
+    if (is_string($startAt) && trim($startAt) !== '') {
+        $startTimestamp = strtotime($startAt);
+        if ($startTimestamp === false || $startTimestamp > $now) return false;
+    }
+    $expiresAt = $subscription['expires_at'] ?? null;
+    if (is_string($expiresAt) && trim($expiresAt) !== '') {
+        $expiresTimestamp = strtotime($expiresAt);
+        if ($expiresTimestamp === false || $expiresTimestamp <= $now) return false;
+    }
+    return true;
+}
+
+function subscription_plan_course_slugs(array $plan, ?array $availableCatalog = null): array
+{
+    $availableCatalog ??= available_course_catalog();
+    $coveredCourses = array_map('strval', (array) ($plan['covered_courses'] ?? []));
+    $coveredGroups = is_string($plan['covered_groups'] ?? null)
+        ? (json_decode($plan['covered_groups'], true) ?: [])
+        : (array) ($plan['covered_groups'] ?? []);
+    $coveredGroups = array_map('strval', $coveredGroups);
+    $slugs = [];
+    foreach ($availableCatalog as $slug => $course) {
+        if (!empty($plan['all_access'])
+            || in_array((string) $slug, $coveredCourses, true)
+            || in_array((string) ($course['group'] ?? ''), $coveredGroups, true)) {
+            $slugs[] = (string) $slug;
+        }
+    }
+    return $slugs;
+}
+
+function subscription_covers_course(array $subscription, string $courseSlug, ?array $availableCatalog = null): bool
+{
+    if (!subscription_is_current($subscription)) return false;
+    $availableCatalog ??= available_course_catalog();
+    if (!isset($availableCatalog[$courseSlug])) return false;
+    $coveredCourses = is_string($subscription['covered_courses'] ?? null)
+        ? (json_decode($subscription['covered_courses'], true) ?: [])
+        : (array) ($subscription['covered_courses'] ?? []);
+    $coveredGroups = is_string($subscription['covered_groups'] ?? null)
+        ? (json_decode($subscription['covered_groups'], true) ?: [])
+        : (array) ($subscription['covered_groups'] ?? []);
+    $course = $availableCatalog[$courseSlug];
+    return !empty($subscription['all_access'])
+        || in_array($courseSlug, array_map('strval', $coveredCourses), true)
+        || in_array((string) ($course['group'] ?? ''), array_map('strval', $coveredGroups), true);
 }
 
 function create_subscription_record(array $subscription): void
@@ -366,9 +435,23 @@ function enroll_user_in_course(array $user, string $courseSlug, string $source =
 
 function user_has_course_access(array $user, string $courseSlug): bool
 {
+    static $subscriptionCache = [];
     $revoked = (array) ($user['revoked_courses'] ?? []);
     if (!empty($revoked[$courseSlug])) return false;
-    return in_array($courseSlug, (array) ($user['enrolled'] ?? []), true);
+    $isEnrolled = in_array($courseSlug, (array) ($user['enrolled'] ?? []), true);
+    $enrollment = (array) (((array) ($user['enrollment_sources'] ?? []))[$courseSlug] ?? []);
+    $subscriptionId = (string) ($enrollment['subscription_id'] ?? '');
+    $isSubscriptionEnrollment = ($enrollment['source'] ?? '') === 'subscription' || $subscriptionId !== '';
+
+    if ($isEnrolled && !$isSubscriptionEnrollment) return true;
+    $availableCatalog = available_course_catalog();
+    if (!isset($availableCatalog[$courseSlug])) return false;
+    $userId = (string) ($user['id'] ?? '');
+    if (!array_key_exists($userId, $subscriptionCache)) $subscriptionCache[$userId] = user_subscriptions($userId);
+    foreach ($subscriptionCache[$userId] as $subscription) {
+        if (subscription_covers_course($subscription, $courseSlug, $availableCatalog)) return true;
+    }
+    return false;
 }
 
 function admin_set_course_access(string $userId, string $courseSlug, bool $active, string $adminId, string $reason = ''): void
@@ -380,12 +463,22 @@ function admin_set_course_access(string $userId, string $courseSlug, bool $activ
         $series->execute([':slug' => $courseSlug]);
         $seriesId = $series->fetchColumn();
         if ($seriesId === false) throw new RuntimeException('Course was not found.');
+        if ($active) {
+            $deleteSyntheticRevocation = $pdo->prepare("DELETE FROM enrollments WHERE user_id=:user_id AND series_id=:series_id AND access_status='revoked' AND source='admin' AND enrollment_source='admin' AND subscription_id IS NULL");
+            $deleteSyntheticRevocation->execute([':user_id' => $userId, ':series_id' => $seriesId]);
+            if ($deleteSyntheticRevocation->rowCount() > 0) return;
+        }
         $update = $pdo->prepare('UPDATE enrollments SET access_status=:status,deactivated_at=:deactivated_at,deactivated_by=:deactivated_by,deactivation_reason=:reason WHERE user_id=:user_id AND series_id=:series_id');
         $update->execute([':status' => $active ? 'active' : 'revoked', ':deactivated_at' => $active ? null : date('Y-m-d H:i:s'), ':deactivated_by' => $active ? null : $adminId, ':reason' => $active ? null : $reason, ':user_id' => $userId, ':series_id' => $seriesId]);
-        if ($update->rowCount() === 0 && !$active) {
+        if ($update->rowCount() === 0) {
+            $currentStatus = $pdo->prepare('SELECT access_status FROM enrollments WHERE user_id=:user_id AND series_id=:series_id');
+            $currentStatus->execute([':user_id' => $userId, ':series_id' => $seriesId]);
+            $savedStatus = $currentStatus->fetchColumn();
+            if ($savedStatus !== false && $savedStatus === ($active ? 'active' : 'revoked')) return;
+            if ($active) throw new RuntimeException('This user has no recorded access to that course.');
             $insert = $pdo->prepare('INSERT INTO enrollments (user_id,series_id,source,enrollment_source,subscription_id,access_status,deactivated_at,deactivated_by,deactivation_reason,enrolled_at) VALUES (:user_id,:series_id,\'admin\',\'admin\',NULL,\'revoked\',:deactivated_at,:deactivated_by,:reason,:enrolled_at)');
             $insert->execute([':user_id' => $userId, ':series_id' => $seriesId, ':deactivated_at' => date('Y-m-d H:i:s'), ':deactivated_by' => $adminId, ':reason' => $reason, ':enrolled_at' => date('Y-m-d H:i:s')]);
-        } elseif ($update->rowCount() === 0) throw new RuntimeException('This user has no recorded access to that course.');
+        }
         return;
     }
     $allUsers = users();
@@ -491,9 +584,16 @@ function admin_course_control_rows(): array
         }
         $subscriptions = user_subscriptions((string) ($user['id'] ?? ''));
         $premium = null;
-        foreach ($subscriptions as $subscription) if (($subscription['status'] ?? '') === 'ACTIVE' && (empty($subscription['expires_at']) || strtotime((string) $subscription['expires_at']) > time())) { $premium = $subscription; break; }
+        foreach ($subscriptions as $subscription) if (subscription_is_current($subscription)) { $premium = $subscription; break; }
         $courses = [];
-        foreach (array_unique(array_merge((array) ($user['enrolled'] ?? []), array_keys((array) ($user['revoked_courses'] ?? [])), array_keys($attemptsByCourse))) as $slug) {
+        $managedCourseSlugs = array_merge((array) ($user['enrolled'] ?? []), array_keys((array) ($user['revoked_courses'] ?? [])), array_keys($attemptsByCourse));
+        if ($premium !== null) {
+            $availableCatalog = available_course_catalog();
+            foreach ($availableCatalog as $slug => $course) {
+                if (subscription_covers_course($premium, (string) $slug, $availableCatalog)) $managedCourseSlugs[] = (string) $slug;
+            }
+        }
+        foreach (array_unique($managedCourseSlugs) as $slug) {
             $stats = $attemptsByCourse[$slug] ?? ['count' => 0, 'total' => 0, 'last' => null];
             $courses[] = ['slug' => $slug, 'active' => user_has_course_access($user, $slug), 'attempts' => $stats['count'], 'average' => $stats['count'] ? (int) round($stats['total'] / $stats['count']) : 0, 'last' => $stats['last']];
         }
@@ -506,17 +606,18 @@ function course_entitlement(?array $user, string $courseSlug): array
 {
     if ($user === null) return ['eligible'=>false,'source'=>'guest','price_paise'=>null,'message'=>'Please log in to continue.'];
     if (!empty(((array) ($user['revoked_courses'] ?? []))[$courseSlug])) return ['eligible'=>false,'source'=>'revoked','price_paise'=>null,'message'=>'Course access was disabled by an administrator.'];
-    if (in_array($courseSlug, (array)($user['enrolled'] ?? []), true)) return ['eligible'=>true,'source'=>'owned','price_paise'=>0,'message'=>'You already have access to this course.'];
+    $isEnrolled = in_array($courseSlug, (array) ($user['enrolled'] ?? []), true);
+    $enrollment = (array) (((array) ($user['enrollment_sources'] ?? []))[$courseSlug] ?? []);
+    if ($isEnrolled && ($enrollment['source'] ?? '') !== 'subscription' && empty($enrollment['subscription_id'])) return ['eligible'=>true,'source'=>'owned','price_paise'=>0,'message'=>'You already have access to this course.'];
+    if ($isEnrolled && user_has_course_access($user, $courseSlug)) return ['eligible'=>true,'source'=>'owned','price_paise'=>0,'message'=>'You already have access to this course.'];
     $catalog = published_banking_catalog();
-    $group = (string)($catalog[$courseSlug]['group'] ?? '');
-    foreach (user_subscriptions((string)$user['id']) as $subscription) {
-        $status = (string)($subscription['status'] ?? '');
-        $expires = strtotime((string)($subscription['expires_at'] ?? ''));
-        if ($status !== 'ACTIVE' || ($expires !== false && $expires <= time())) continue;
-        $coveredCourses = (array)($subscription['covered_courses'] ?? []);
-        $coveredGroups = is_string($subscription['covered_groups'] ?? null) ? (json_decode($subscription['covered_groups'], true) ?: []) : (array)($subscription['covered_groups'] ?? []);
-        $allAccess = !empty($subscription['all_access']);
-        if ($allAccess || in_array($courseSlug, $coveredCourses, true) || in_array($group, $coveredGroups, true)) return ['eligible'=>true,'source'=>'subscription','price_paise'=>0,'subscription_id'=>$subscription['id'],'message'=>'Included with your active subscription.'];
+    $availableCatalog = available_course_catalog();
+    if (isset($availableCatalog[$courseSlug])) {
+        foreach (user_subscriptions((string)$user['id']) as $subscription) {
+            if (subscription_covers_course($subscription, $courseSlug, $availableCatalog)) {
+                return ['eligible'=>true,'source'=>'subscription','price_paise'=>0,'subscription_id'=>$subscription['id'],'message'=>'Included with your active subscription.'];
+            }
+        }
     }
     return ['eligible'=>false,'source'=>'paid','price_paise'=>isset($catalog[$courseSlug]['price_paise'])?(int)$catalog[$courseSlug]['price_paise']:null,'message'=>''];
 }
@@ -553,6 +654,26 @@ function verify_razorpay_signature(string $orderId, string $paymentId, string $s
     if (razorpay_key_secret() === '') return false;
     $expected = hash_hmac('sha256', $orderId . '|' . $paymentId, razorpay_key_secret());
     return hash_equals($expected, $signature);
+}
+
+function verify_razorpay_payment(string $orderId, string $paymentId, int $expectedAmount, string $currency = 'INR'): bool
+{
+    if (!razorpay_is_configured() || !function_exists('curl_init') || $paymentId === '') return false;
+    $curl = curl_init('https://api.razorpay.com/v1/payments/' . rawurlencode($paymentId));
+    curl_setopt_array($curl, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_USERPWD => razorpay_key_id() . ':' . razorpay_key_secret(),
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    $body = curl_exec($curl);
+    $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+    $payment = json_decode((string) $body, true);
+    return $status >= 200 && $status < 300 && is_array($payment)
+        && hash_equals($orderId, (string) ($payment['order_id'] ?? ''))
+        && (int) ($payment['amount'] ?? 0) === $expectedAmount
+        && strtoupper((string) ($payment['currency'] ?? '')) === strtoupper($currency)
+        && ($payment['status'] ?? '') === 'captured';
 }
 
 function ensure_user_store(): void
@@ -754,7 +875,7 @@ function test_records(string $slug): array
         return $records;
     }
 
-    $stmt = $pdo->prepare('SELECT t.id,t.test_key,t.title,t.duration_minutes,q.id AS question_id,q.position,q.question_text,q.topic,q.correct_option,o.position AS option_position,o.option_text FROM tests t JOIN series s ON s.id=t.series_id LEFT JOIN questions q ON q.test_id=t.id LEFT JOIN question_options o ON o.question_id=q.id WHERE s.slug=:slug AND t.active=1 ORDER BY t.test_key,q.position,o.position');
+    $stmt = $pdo->prepare('SELECT t.id,t.test_key,t.title,t.duration_minutes,q.id AS question_id,q.position,q.question_text,q.topic,q.section_title,q.direction_text,q.correct_option,o.position AS option_position,o.option_text FROM tests t JOIN series s ON s.id=t.series_id LEFT JOIN questions q ON q.test_id=t.id LEFT JOIN question_options o ON o.question_id=q.id WHERE s.slug=:slug AND t.active=1 ORDER BY t.test_key,q.position,o.position');
     $stmt->execute([':slug' => $slug]);
     $tests = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
@@ -762,12 +883,45 @@ function test_records(string $slug): array
         if (!isset($tests[$key])) $tests[$key] = ['title' => $row['title'], 'duration_minutes' => (int) $row['duration_minutes'], 'questions' => []];
         if ($row['question_id'] === null) continue;
         $position = (int) $row['position'];
-        if (!isset($tests[$key]['questions'][$position])) $tests[$key]['questions'][$position] = ['q' => $row['question_text'], 'topic' => $row['topic'], 'answer' => (int) $row['correct_option'], 'options' => []];
+        if (!isset($tests[$key]['questions'][$position])) $tests[$key]['questions'][$position] = ['q' => $row['question_text'], 'topic' => $row['topic'], 'section' => $row['section_title'], 'direction' => $row['direction_text'], 'answer' => (int) $row['correct_option'], 'options' => []];
         if ($row['option_position'] !== null) $tests[$key]['questions'][$position]['options'][(int) $row['option_position']] = $row['option_text'];
     }
     foreach ($tests as &$test) $test['questions'] = array_values($test['questions']);
     if ($tests === [] && isset(published_banking_catalog()[$slug])) $tests = banking_test_sets($slug);
     return $tests;
+}
+
+function available_course_catalog(): array
+{
+    static $catalog = null;
+    if ($catalog !== null) return $catalog;
+
+    $catalog = [];
+    foreach (published_banking_catalog() as $slug => $course) {
+        if (preg_match('/^(test|demo|sample|untitled)$/i', trim((string) ($course['title'] ?? ''))) === 1) continue;
+        foreach (test_records((string) $slug) as $test) {
+            if (is_array($test['questions'] ?? null) && $test['questions'] !== []) {
+                $catalog[(string) $slug] = $course;
+                break;
+            }
+        }
+    }
+    return $catalog;
+}
+
+function write_test_record_file(string $slug, string $testKey, array $test): void
+{
+    if (preg_match('/^[a-z0-9-]+$/', $slug) !== 1 || preg_match('/^test-[0-9]+$/', $testKey) !== 1) {
+        throw new InvalidArgumentException('Invalid test file location.');
+    }
+    $folder = __DIR__ . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . $slug;
+    if (!is_dir($folder) && !mkdir($folder, 0700, true) && !is_dir($folder)) {
+        throw new RuntimeException('Could not create the test data directory.');
+    }
+    $json = json_encode($test, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    if (file_put_contents($folder . DIRECTORY_SEPARATOR . $testKey . '.json', $json, LOCK_EX) === false) {
+        throw new RuntimeException('Could not save the test data file.');
+    }
 }
 
 function save_test_record(string $slug, string $testKey, array $test): void
@@ -791,11 +945,11 @@ function save_test_record(string $slug, string $testKey, array $test): void
         $save->execute([':id' => $testId, ':series_id' => $seriesId, ':test_key' => $testKey, ':title' => $test['title'] ?? $testKey, ':duration' => max(1, (int) ($test['duration_minutes'] ?? 10)), ':created_at' => date('Y-m-d H:i:s')]);
         $pdo->prepare('DELETE qo FROM question_options qo JOIN questions q ON q.id=qo.question_id WHERE q.test_id=:test_id')->execute([':test_id' => $testId]);
         $pdo->prepare('DELETE FROM questions WHERE test_id=:test_id')->execute([':test_id' => $testId]);
-        $question = $pdo->prepare('INSERT INTO questions (id,test_id,position,question_text,topic,correct_option) VALUES (:id,:test_id,:position,:text,:topic,:answer)');
+        $question = $pdo->prepare('INSERT INTO questions (id,test_id,position,question_text,topic,section_title,direction_text,correct_option) VALUES (:id,:test_id,:position,:text,:topic,:section,:direction,:answer)');
         $option = $pdo->prepare('INSERT INTO question_options (question_id,position,option_text) VALUES (:question_id,:position,:text)');
         foreach ((array) ($test['questions'] ?? []) as $position => $row) {
             $questionId = 'question-' . substr(hash('sha256', $slug . ':' . $testKey . ':' . $position), 0, 20);
-            $question->execute([':id' => $questionId, ':test_id' => $testId, ':position' => $position, ':text' => $row['q'] ?? '', ':topic' => $row['topic'] ?? '', ':answer' => (int) ($row['answer'] ?? 0)]);
+            $question->execute([':id' => $questionId, ':test_id' => $testId, ':position' => $position, ':text' => $row['q'] ?? '', ':topic' => $row['topic'] ?? '', ':section' => $row['section'] ?? '', ':direction' => $row['direction'] ?? '', ':answer' => (int) ($row['answer'] ?? 0)]);
             foreach ((array) ($row['options'] ?? []) as $optionPosition => $text) $option->execute([':question_id' => $questionId, ':position' => $optionPosition, ':text' => $text]);
         }
         $pdo->commit();
@@ -813,9 +967,10 @@ function delete_test_record(string $slug, string $testKey): void
 function test_record(string $slug, string $testKey): ?array
 {
     if ($slug === 'sample') {
-        $sample = test_records('sbi-po')['test-01'] ?? null;
-        if (is_array($sample)) $sample['title'] = APP_BRAND_NAME . ' Free Sample Mock';
-        return $sample;
+        $samplePath = __DIR__ . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'sample' . DIRECTORY_SEPARATOR . 'test-01.json';
+        if (!is_file($samplePath)) return null;
+        $sample = json_decode((string) file_get_contents($samplePath), true);
+        return is_array($sample) ? $sample : null;
     }
     $tests = test_records($slug);
     return $tests[$testKey] ?? null;
@@ -874,13 +1029,20 @@ function users(): array
 
 function hydrate_db_user(PDO $pdo, array $user): array
 {
-    $enrollment = $pdo->prepare('SELECT s.slug,e.access_status,e.deactivated_at,e.deactivated_by,e.deactivation_reason FROM enrollments e JOIN series s ON s.id = e.series_id WHERE e.user_id = :user_id');
+    $enrollment = $pdo->prepare('SELECT s.slug,e.access_status,e.enrollment_source,e.subscription_id,e.deactivated_at,e.deactivated_by,e.deactivation_reason FROM enrollments e JOIN series s ON s.id = e.series_id WHERE e.user_id = :user_id');
     $enrollment->execute([':user_id' => $user['id']]);
     $user['enrolled'] = [];
+    $user['enrollment_sources'] = [];
     $user['revoked_courses'] = [];
     foreach ($enrollment->fetchAll(PDO::FETCH_ASSOC) as $savedEnrollment) {
         if (($savedEnrollment['access_status'] ?? 'active') === 'revoked') $user['revoked_courses'][$savedEnrollment['slug']] = $savedEnrollment;
-        else $user['enrolled'][] = $savedEnrollment['slug'];
+        else {
+            $user['enrolled'][] = $savedEnrollment['slug'];
+            $user['enrollment_sources'][$savedEnrollment['slug']] = [
+                'source' => (string) ($savedEnrollment['enrollment_source'] ?? 'free'),
+                'subscription_id' => $savedEnrollment['subscription_id'] ?? null,
+            ];
+        }
     }
 
     $orders = $pdo->prepare('SELECT o.*, c.code AS coupon_code FROM orders o LEFT JOIN coupons c ON c.code = o.coupon_code WHERE o.user_id = :user_id ORDER BY o.created_at DESC');
@@ -937,7 +1099,7 @@ function sync_user_relational_data(PDO $pdo, array $user): void
             $amount = (int) round(((float) ($saved['amount'] ?? 0)) * 100);
             $original = (int) round(((float) ($saved['original_amount'] ?? $saved['amount'] ?? 0)) * 100);
             $discount = (int) round(((float) ($saved['discount'] ?? 0)) * 100);
-            $order->execute([':id' => $saved['id'] ?? bin2hex(random_bytes(8)), ':user_id' => $userId, ':plan' => $product, ':amount' => $amount, ':original_amount' => $original, ':currency' => $saved['currency'] ?? 'INR', ':status' => $saved['status'] ?? 'paid', ':provider' => $saved['provider'] ?? 'demo', ':coupon' => $saved['coupon'] ?? null, ':discount' => $discount, ':created_at' => db_datetime($saved['created_at'] ?? null)]);
+            $order->execute([':id' => $saved['id'] ?? bin2hex(random_bytes(8)), ':user_id' => $userId, ':plan' => $product, ':amount' => $amount, ':original_amount' => $original, ':currency' => $saved['currency'] ?? 'INR', ':status' => $saved['status'] ?? 'paid', ':provider' => $saved['provider'] ?? 'unknown', ':coupon' => $saved['coupon'] ?? null, ':discount' => $discount, ':created_at' => db_datetime($saved['created_at'] ?? null)]);
             if ($product !== 'all-access') {
                 $lookup->execute([':slug' => $product]);
                 $seriesId = $lookup->fetchColumn();
@@ -1138,4 +1300,13 @@ function safe_next(string $next): string
 function e(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+function format_question_text(string $value): string
+{
+    $text = e($value);
+    $text = preg_replace('/\*\*(.+?)\*\*/u', '<strong>$1</strong>', $text) ?? $text;
+    $text = preg_replace('/^\s*([A-E])\.\s+(?=\S)/u', '<strong>$1.</strong> ', $text) ?? $text;
+    $text = preg_replace('/(?<=[.!?])\s+([A-E])\.\s+(?=\S)/u', '<br><strong>$1.</strong> ', $text) ?? $text;
+    return nl2br($text);
 }

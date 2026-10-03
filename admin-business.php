@@ -20,8 +20,7 @@ foreach ($users as $user) {
     foreach ((array) ($user['enrolled'] ?? []) as $slug) if (user_has_course_access($user, (string) $slug)) $metrics['active_enrollments']++;
     $metrics['attempts'] += count((array) ($user['attempts'] ?? []));
     foreach (user_subscriptions((string) ($user['id'] ?? '')) as $subscription) {
-        $expires = strtotime((string) ($subscription['expires_at'] ?? ''));
-        if (($subscription['status'] ?? '') === 'ACTIVE' && ($expires === false || $expires > time())) $metrics['premium_users']++;
+        if (subscription_is_current($subscription)) { $metrics['premium_users']++; break; }
     }
     foreach ((array) ($user['orders'] ?? []) as $order) {
         $date = strtotime((string) ($order['created_at'] ?? ''));

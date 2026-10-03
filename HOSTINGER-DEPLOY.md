@@ -19,9 +19,15 @@ In Hostinger hPanel:
 7. Run `migrations/008_create_subscriptions.sql` to enable subscription plans, entitlements, and subscription-backed enrollments.
 8. Run `migrations/009_add_enrollment_access_control.sql` to enable reversible per-user course deactivation and live access enforcement.
 9. Run `migrations/010_create_blog_posts.sql` to enable MySQL-backed blog submissions and review.
-10. Run `scripts/import_json_to_mysql.php` once with the Hostinger database credentials. This seeds the 27 banking series and 270 starter questions.
+10. Run `scripts/import_json_to_mysql.php` once with the Hostinger database credentials. This seeds the built-in banking series and starter questions, plus any custom exam series and tests present in `data/series.json` and `tests/`.
+11. Run `migrations/011_activate_sbi_subscription.sql` after the import to publish the five SBI series and create the baseline premium plan in MySQL.
+12. Run `migrations/012_add_question_sections_and_directions.sql` to store question section labels and shared directions.
+13. Run `migrations/013_convert_bank_premium_to_all_courses.sql` after migration 011 to convert the existing ₹999/180-day plan to all published courses. This also grants the expanded course scope to existing active subscriptions without changing their payment or expiry history. If migration 011 is rerun later, rerun migration 013 afterward.
+14. Run `migrations/014_set_all_courses_premium_price.sql` after migration 013 to set the All Government Exams Premium price to ₹149. If migration 013 is rerun later, rerun migration 014 afterward.
+15. Run `migrations/015_refresh_bpsc_test_description.sql` to update the published BPSC listing to its current 150-question, 120-minute format.
+16. Run `migrations/016_add_blog_pending_revision.sql` to let authors propose edits to published articles without removing the current live version while an administrator reviews the change. Skip this migration if the `pending_revision` column already exists.
 
-The importer creates the schema, imports users and orders, and seeds the production banking catalog. `hostinger-import.sql` is a legacy snapshot and does not contain the new banking catalog.
+The importer creates the schema, imports users and orders, and seeds the built-in banking catalog alongside custom government-exam series stored in JSON. `hostinger-import.sql` is a legacy snapshot and does not contain the latest catalog or test data.
 
 ## 3. Upload the application
 
@@ -50,6 +56,8 @@ Add the official HTTPS profile URLs to these settings when the accounts are read
 
 Keep `hostinger-config.php` private. It is ignored by Git when added to the server only.
 
+For Razorpay, either set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in the hosting environment or set `HOSTINGER_RAZORPAY_KEY_ID` and `HOSTINGER_RAZORPAY_KEY_SECRET` in the server-only `hostinger-config.php`. Use the live Key ID beginning with `rzp_live_` and its matching Secret. Never put real credentials in the example file or commit them to Git.
+
 Use an email address created on the same domain as the website for `HOSTINGER_MAIL_FROM`. Hostinger's PHP `mail()` service must be enabled for the account, and the domain should have valid SPF/DKIM records so reset emails are accepted reliably.
 
 ## 5. Test
@@ -68,7 +76,10 @@ Open your domain and verify:
 - Orders and coupons appear in the database.
 - Forgot-password creates a database reset token.
 - Forgot-password sends a one-hour reset link by email; reset tokens are hashed in MySQL and are never written to a text file in production.
-- Create plans from `/admin-subscriptions.php`, then test an eligible course enrollment. Do not enable real subscription payments until the gateway callback/signature flow is configured; local demo activation is restricted to `PAYMENT_MODE=demo`.
+- Configure the matching live Razorpay Key ID and Key Secret in the hosting environment or private `hostinger-config.php`. This production checkout rejects test keys and requires a Key ID beginning with `rzp_live_`. Keep the secret out of source control and public files.
+- Production enrollment and activation require a valid signature and Razorpay API confirmation of a captured payment; missing or invalid credentials fail closed. Verify the flow using a controlled low-value live purchase and refund before launch.
+- Create plans from `/admin-subscriptions.php`, then verify eligible course enrollment and premium access after a successful Razorpay payment.
+- Open `/subscription.php` and confirm All Government Exams Premium lists every eligible published series, including BPSC and banking courses. Confirm the included-course count matches the published catalog.
 - Open `/admin-course-control.php` and verify that an admin can view premium status, course-level attempts/averages, and deactivate/restore access without deleting orders or history.
 
-Do not enable real Razorpay payments until the site is on HTTPS and the production Razorpay keys are configured.
+Do not accept production payments until the site is on HTTPS, Razorpay has approved the account for live payments, and the production Razorpay keys are configured. Make a low-value live transaction and verify the order, enrollment, invoice and refund process before announcing checkout.

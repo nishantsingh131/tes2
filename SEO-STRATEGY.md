@@ -1,10 +1,17 @@
 # FullMockTestSeries.com SEO and Content Plan
 
-**Review date:** 26 September 2026  
+**Review date:** 3 October 2026
 **Canonical domain configured in the application:** `https://fullmocktestseries.com`  
-**Evidence note:** Search demand and competition were not measured; no volume or ranking estimates are included. Catalog facts below reflect the local site snapshot reviewed on this date and can change as admins publish or edit series.
+**Evidence note:** Query phrasing below was sampled from Google autocomplete on 3 October 2026 and checked against the live catalog. Autocomplete is not search-volume data. Search Console, Bing Webmaster Tools, keyword volumes, competition, and rank tracking are not available in this workspace; no traffic or ranking estimates are claimed.
 
-At review time, the public catalog contains one descriptively named, populated series: SBI SO, with 15 available tests and 10 questions per test. A second active record named `Test` is treated as a placeholder: it is hidden from the public catalog and sitemap, and its detail URL redirects to the catalog until an admin renames it and publishes useful test content. This prevents thin or misleading search pages without deleting stored data.
+At review time, the production catalog has two eligible series: BPSC Prelims (one 150-question, 120-minute practice test) and SBI PO Prelims. Do not imply that Bihar Police, State PCS, UPSC, IBPS, or other exam series are available until their own reviewed question sets are published.
+
+Official terminology references:
+
+- [Bihar Public Service Commission](https://bpsc.bihar.gov.in/)
+- [Central Selection Board of Constable, Bihar](https://csbc.bihar.gov.in/)
+- [Union Public Service Commission examinations](https://upsc.gov.in/)
+- [Institute of Banking Personnel Selection](https://www.ibps.in/)
 
 ## A. Page Purpose
 
@@ -29,8 +36,13 @@ These are topic and query hypotheses, not volume-ranked terms. Use only terms su
 
 | Page | Primary keyword | Secondary and semantic topics | Long-tail / question / natural-language variations |
 | --- | --- | --- | --- |
-| Home/catalog | banking mock tests | online banking practice test, banking exam test series, timed mock test, SBI SO practice, test-set availability | “Where can I practice SBI SO questions online?”, “How many SBI SO mock tests are available?”, “How do I review a mock-test result?” |
-| SBI SO product | SBI SO mock test | SBI SO specialist officer practice, SBI SO test series, timed SBI SO questions, SBI SO exam stage | “How many questions are in each SBI SO practice test?”, “How long is this SBI SO test?”, “How do I prepare with a mock test for SBI SO?” |
+| Home/catalog | BPSC Prelims and SBI PO mock tests | online government exam mock tests, BPSC test series, SBI PO Prelims practice, published online practice tests | “Which exam series are available?”, “How many questions are in the BPSC test?”, “How long is the test?” Keep the title and lead copy aligned with the current catalog. |
+| BPSC Prelims product | BPSC Prelims mock test | BPSC PT mock test, BPSC online test series, BPSC General Studies practice, Bihar civil services prelims practice | “BPSC prelims mock test free”, “BPSC prelims mock test free with answers”, “BPSC mock test in Hindi”, “BPSC mock test PDF”, “BPSC mock test 2026”. The full set is paid; describe only the actual free sample as free. No Hindi version or downloadable PDF is currently represented. |
+| SBI PO Prelims product | SBI PO Prelims mock test | SBI PO online practice, SBI PO test series, timed SBI PO questions | “SBI PO mock test free”, “SBI PO prelims mock test free with answers”, “SBI PO mock test 2026”, “SBI PO mock test without registration”, “SBI PO mock test PDF”. Do not promise PDF downloads or no-login full tests unless those features exist. |
+| Future Bihar Police page, only after real series exists | Bihar Police Constable mock test | Bihar Police online test, Bihar Police Constable practice | Autocomplete also surfaced Hindi, free, year-specific, prohibition-constable, and operator queries. Do not target as an available offering yet. |
+| Future UPSC page, only after real series exists | UPSC Prelims mock test | UPSC free online mock test, UPSC CSAT mock test, UPSC mock test in Hindi | Autocomplete surfaced prelims, free, online, Hindi, and PDF variants. Publish only after matching reviewed content exists. |
+| Future IBPS/bank products, only after real series exists | Exact IBPS or bank exam + mock test | IBPS PO mock test free online, IBPS PO prelims mock test, bank PO / bank clerk mock test | Autocomplete surfaced free, prelims, answers/PDF, and no-login variants. Current SBI content does not substantiate IBPS-targeted pages. |
+| Future SBI SO page, only after real series exists | SBI SO mock test | SBI SO specialist officer practice, SBI SO test series, timed SBI SO questions, SBI SO exam stage | Use the exact published stage, questions, and timings; do not publish a placeholder page. |
 | About | FullMockTestSeries.com | online mock-test platform, competitive exam practice, timed practice | “What is FullMockTestSeries.com?”, “Who provides these practice tests?” |
 | FAQ | mock test practice questions | enrollment, test timing, result history, guest sample, series availability | “Can I take a mock test before signing in?”, “Are practice scores official?”, “Where can I see saved attempts?” |
 | Contact | FullMockTestSeries.com contact | mock-test support, account help, privacy request | “How do I contact support about a mock test?”, “How can I request deletion of my account data?” |
@@ -41,7 +53,13 @@ These are topic and query hypotheses, not volume-ranked terms. Use only terms su
 | Future SSC page, only when real series exists | SSC mock test | SSC exam stage, series-specific test counts, verified question format | “How many questions are in the published [exam] practice test?” |
 | Future Railway/BPSC/other page, only when real series exists | Exact exam + mock test | Official exam name, stage, current series details | Use questions matching the real published content; do not publish placeholder pages targeting those phrases. |
 
-Hindi-English examples to use only after Hindi content exists: `SBI SO mock test Hindi`, `banking mock test online`, `SSC mock test series`, `Railway exam practice test`, `BPSC mock test`. Do not imply Hindi availability merely because people search in Hinglish.
+Treat year, language, price, answer-key, and PDF variants as modifiers of the real page only when the actual course offers them. Never add year-specific boilerplate or create keyword landing pages without useful matching content. Hindi-English examples should be used only after Hindi content exists. Do not imply Hindi availability merely because people search in Hinglish.
+
+### Query research notes (Google autocomplete, 3 October 2026)
+
+Observed BPSC variants included `BPSC prelims mock test free`, `BPSC prelims mock test free with answers`, `BPSC online test series`, `BPSC PT mock test`, `BPSC mock test in Hindi`, and `BPSC mock test PDF`. SBI PO variants included free, prelims, 2026, online, with answers, without registration/login, and PDF. Broader suggestions included `Bihar GK mock test`, `bank exam mock test free`, and `UPSC mock test prelims free`. These are query-language observations, not a complete inventory and not evidence of demand or search volume.
+
+**Prioritization:** Make the BPSC and SBI PO pages satisfy the exact available exam/stage and test-detail intent first. Treat Bihar Police, UPSC, State PCS, and IBPS terms as a product roadmap, not as doorway pages or availability claims. In Search Console and Bing Webmaster Tools, replace this hypothesis list with actual impressions, clicks, query CTR, index coverage, and country/device splits once verified access is available.
 
 Related entities should be named only when relevant: State Bank of India (SBI), Specialist Officer (SO), Institute of Banking Personnel Selection (IBPS), State Public Service Commission (State PSC), Railway Recruitment Boards (RRBs), and the actual examination stage shown on the series page.
 
@@ -65,7 +83,7 @@ Featured snippets, PAA, Discover, image placement, AI Overview links, rankings, 
 
 | Page | Title | Meta description | Preferred URL |
 | --- | --- | --- | --- |
-| Home/catalog | `Banking Mock Tests and Test Series | FullMockTestSeries.com` | `Explore published competitive exam mock tests, compare series details and start timed practice. Check official notices for current exam requirements.` | `https://fullmocktestseries.com/` |
+| Home/catalog | `Government Exam Mock Tests and Test Series | FullMockTestSeries.com` | `Browse published BPSC Prelims and banking mock test series for government-exam practice. Compare available questions and timings, and check official notices for current exam rules.` | `https://fullmocktestseries.com/` |
 | SBI SO series | `SBI SO Mock Tests and Test Series | FullMockTestSeries.com` | Generated from the real series title, populated test count, stage, and timing. | Current stable URL: `/product.php?product=sbi-so` |
 | About | `About FullMockTestSeries.com` | `Learn how FullMockTestSeries.com organizes timed mock tests and test series for competitive exam practice.` | `/info.php?page=about` |
 | FAQ | `Mock Test Practice FAQs | FullMockTestSeries.com` | `Answers about choosing a test series, starting practice, saved results, accounts and support.` | `/info.php?page=faq` |
@@ -82,7 +100,7 @@ The current `.php` query URLs are stable and canonical. If clean routes such as 
 
 **Home/catalog**
 
-- H1: `Crack Banking Exams` is the server-rendered default. The rotating category animation is promotional; the visible catalog remains the source of truth for available series. Do not imply that a category has a live series unless its card is present.
+- H1: `Prepare for Government Exams`. The visible catalog remains the source of truth for available series. Do not imply that a category has a live series unless its card is present.
 - H2: `A useful routine for mock-test practice`
 - H3: `Choose the right series`
 - H3: `Take a timed attempt`
@@ -116,9 +134,9 @@ The current `.php` query URLs are stable and canonical. If clean routes such as 
 ### Home/catalog copy
 
 **Hero**  
-H1: `Crack Banking Exams`  
-Intro: `Build a focused preparation plan for India's leading public-sector exams. Explore currently published series below; new categories appear when their practice sets are ready.`  
-Search helper: `Search {titles of currently published series}`  
+H1: `Prepare for Government Exams`
+Intro: `Find practice for Bihar Police, BPSC, State PCS, UPSC Civil Services and Banking exams. Only series with published questions appear in the catalog.`
+Search helper: `Search published series by exam, category or stage; unpublished series are not presented as available.`
 Primary CTA: `Try Free Sample`  
 Trust detail: `Exam dates, eligibility, syllabi and selection rules can change. Confirm current requirements with the official exam authority.`
 
@@ -249,14 +267,14 @@ Validate rendered JSON-LD with Google's Rich Results Test where relevant and mon
 | Canonicals | Absolute HTTPS canonicals use `https://fullmocktestseries.com`; verify this is the final production host and redirects match it. |
 | Index control | Account/admin/checkout/test actions and unfinished privacy/terms/refund drafts use `noindex`; generic placeholder products redirect to the catalog. |
 | Robots | `robots.txt` is at root and points to `sitemap.php`; it disallows `/data/` for crawlers, but server access controls—not robots—must protect private files. |
-| Sitemap | `/sitemap.php` returns a sitemap index; child files are capped at 10,000 URLs. With MySQL, product slugs are counted and fetched per shard using SQL pagination; local JSON mode uses an in-memory fallback. Sitemap index limit is 50,000 child files; larger estates need nested indexes. Submit the index in Search Console and Bing Webmaster Tools after DNS/TLS are live. |
+| Sitemap | `/sitemap.php` returns a sitemap index; child files are capped at 10,000 URLs. With MySQL, product slugs are counted and fetched per shard using SQL pagination; local JSON mode uses an in-memory fallback. Published blog index/article URLs are included when posts exist. Sitemap index limit is 50,000 child files; larger estates need nested indexes. Submit the index in Search Console and Bing Webmaster Tools after DNS/TLS are live. |
 | 404 handling | `/404.php` returns a branded 404 with HTTP 404. Apache uses the root `.htaccess`; the standard local launcher uses `local-router.php`. Verify the actual host's web-server configuration. |
 | Duplicate URLs | Home is canonical to `/`; product query URLs self-canonicalize. Legacy HTML pages are `noindex`; replace their meta refresh with HTTP 301 redirects at the host when possible. |
 | JavaScript | Main text, series cards, product details, and metadata are server-rendered. Search filtering and hero animation are enhancements, not the only source of important content. |
 | Mobile | Responsive checks passed locally; rerun on production devices and check Search Console mobile usability signals. |
 | Core Web Vitals/page speed | Not measured against production hosting. Test representative mobile URLs with PageSpeed Insights and field data in Search Console before launch. Optimize the large logo/cover images if they dominate LCP. |
 | Broken links/statuses | Local public routes were tested. Run a production crawl for HTTP status, canonical, redirects, broken internal/external links, and sitemap consistency. |
-| HTTPS and host | Confirm DNS, valid TLS, preferred host, HTTP→HTTPS and www/non-www redirects before submitting canonical URLs. The configured domain is an assumption from the company URL supplied. |
+| HTTPS and host | Root Apache rules redirect HTTP and `www` to `https://fullmocktestseries.com`; homepage aliases redirect to `/`. Recheck the live variants after deployment. |
 | Search Console/Bing | Ownership is not verified from this workspace. Verify both properties, submit sitemap, inspect homepage and product URLs, monitor indexing and manual actions. |
 
 ## M. Conversion Optimization
@@ -337,9 +355,13 @@ The five social icons are present but intentionally inactive until real profile 
 - [x] No search-volume, ranking, pass-rate, or traffic claims are invented.
 - [x] Placeholder title `Test` is excluded from the public catalog/sitemap and its product URL redirects to the catalog until renamed; the record remains available to admins.
 - [x] Product detail pages are publicly readable; enroll and student actions remain protected.
-- [x] Unique route titles/descriptions, canonicals, robots directives, and Open Graph/Twitter metadata are generated.
+- [x] Unique route titles/descriptions, canonicals, robots directives, and Open Graph/Twitter metadata are generated; published blog stories are indexable and use working `blog.php?slug=` canonicals.
 - [x] Organization/WebSite and product BreadcrumbList structured data match visible content; no fake reviews, offers, FAQs, or course claims.
-- [x] Sitemap parses as XML and contains only eligible pages; `robots.txt` points to it.
+- [x] Sitemap parses as XML and contains eligible course pages; `robots.txt` points to it, and the sitemap now includes published blog URLs when available.
+- [x] Homepage title, heading, intro, and search suggestions reflect live published series; fabricated 200+ series and 4.9/5 rating claims were removed.
+- [x] Product metadata uses published tests and current timings; BPSC catalog copy reflects its 150 questions and 120-minute limit.
+- [x] Apache protection prevents direct HTTP access to raw test JSON and sends `X-Robots-Tag: noindex, nofollow`.
+- [x] Preferred HTTPS/non-www host and homepage aliases are redirected to one canonical URL.
 - [x] No old support domain or phone claim is used in current public content.
 - [ ] Confirm the canonical domain is live with valid TLS and redirect variants to it.
 - [ ] Replace legal placeholders and obtain qualified local review before indexing policy pages or accepting live payments.
@@ -362,3 +384,67 @@ The five social icons are present but intentionally inactive until real profile 
 - [AI features](https://developers.google.com/search/docs/appearance/ai-features)
 - [Discover](https://developers.google.com/search/docs/appearance/google-discover)
 - [Google Images](https://developers.google.com/search/docs/appearance/google-images)
+
+## S. Production audit and completed work (3 October 2026)
+
+Google autocomplete was sampled for BPSC, Bihar Police, UPSC, SBI PO, IBPS PO, bank-exam, and government-exam mock-test queries. It surfaced modifiers such as free, prelims/PT, online test series, with answers, 2026, Hindi, PDF, and without login. Suggestions are not search volume or proof of demand. The live product catalog—not the largest keyword list—sets what the site should claim.
+
+The live review found that the homepage and test listing still described BPSC as a 100-question set after it had grown to 150 questions; homepage text included non-published exams; the premium illustration claimed `200+ series` and a `4.9/5` rating without evidence; blog pages were incorrectly `noindex` and story canonicals pointed to an unserved `/blog/{slug}` path; raw test JSON could be fetched directly; and HTTP/www/homepage aliases were not consolidated consistently.
+
+The deployed changes now:
+
+- Use catalog-based homepage title, description, H1, search suggestions, and footer links.
+- Show verified BPSC test details (150 questions and 120 minutes) in the listing and product snippet.
+- Remove the unsupported series-count/rating claims.
+- Keep empty blog listings `noindex`; allow published stories to be indexed with working `blog.php?slug=` canonicals and include them in the sitemap.
+- Deny direct HTTP access to test JSON and send an `X-Robots-Tag: noindex, nofollow` response header.
+- Redirect HTTP/www and homepage aliases to `https://fullmocktestseries.com/`.
+- Connect `fullmocktestseries.in` as a parked alias on Hostinger and redirect its requests to the matching `.com` path, preserving query strings.
+- Keep homepage descriptions concise and include published test counts/question counts/timings in course snippets where the published data supports it; emit canonical Open Graph URLs and page-matching breadcrumb data.
+- Return a real HTTP 404 (with `noindex`) for unknown or unpublished product slugs rather than redirecting them to the homepage.
+- Keep the signed-in practice dashboard personalized and `noindex`; use the public, crawlable course detail URL for search discovery. The dashboard now links back to that public page and shows test facts in a responsive layout without exposing storage/database implementation details.
+
+Production verification on 3 October 2026: the homepage and both currently eligible product pages return HTTP 200; an unknown blog story and invalid/unpublished product slugs return 404; raw test JSON returns 403 with the noindex header; the XML sitemap parses and lists eight current URLs; and canonical host variants redirect to the HTTPS non-www homepage. The `.in` domain is connected to Hostinger; its authoritative DNS points to Hostinger's CDN, and direct CDN requests redirect to the corresponding `.com` path with the query string intact. Recursive DNS caches may take time to refresh. The two currently eligible product URLs are BPSC Prelims and SBI PO Prelims.
+
+**Follow-up SEO implementation deployed on 3 October 2026:** catalog search recognizes “Bank PO” and “Probationary Officer” as relevant SBI/IBPS PO aliases; each published product page derives its title, description, canonical, and structured test list from its current published tests; and the homepage structured series list is generated from the same eligible catalog.
+
+**Still required for a meaningful ranking program:** verify ownership and submit `https://fullmocktestseries.com/sitemap.php` in Google Search Console and Bing Webmaster Tools; inspect indexing and real queries; collect mobile PageSpeed/Core Web Vitals and server-log crawl data; publish original, expert-reviewed exam guidance with transparent author/source details; and earn relevant editorial links. No Search Console/Bing account data, keyword volumes, PageSpeed field data, or backlink metrics were available during this review. Rankings and first place cannot be guaranteed.
+
+## T. Blog SEO audit and implementation
+
+**Live-content scope checked on 3 October 2026:** the public journal has four published stories: “SBI PO Prelims time management: a calm three-pass approach,” “How to prepare for BPSC Prelims: an eight-week study plan,” “Current affairs for government exams: build a weekly revision system,” and “How to analyse a mock test: turn every attempt into a study plan.” The SBI PO article gives a practical three-pass method, points readers to the official SBI careers notice for the current pattern, avoids prescribing a universal seconds-per-question rule, and links to the published SBI PO Prelims practice series. Keep all four useful, distinct guides aligned with their actual content and sources; do not rewrite them merely to repeat more keywords. Search query targets below are content-planning hypotheses, not measured volumes or promised rankings.
+
+### Keyword and intent map
+
+| Article / cluster | Primary query to answer | Related terms to use only where helpful | Search intent and useful page promise |
+| --- | --- | --- | --- |
+| Existing SBI PO article | SBI PO Prelims time management | SBI PO time management strategy, SBI PO mock test strategy, question selection, accuracy and timed practice | Informational: explain a repeatable way to pace and review a practice test, while directing candidates to the current official notice for exam rules. |
+| Existing BPSC preparation guide | How to prepare for BPSC Prelims | BPSC Prelims study plan, Bihar-focused revision, previous-year questions, mock-test review | Informational: provide a realistic eight-week workflow and keep exam rules tied to official BPSC notices. |
+| Existing mock-test review guide | How to analyse a mock test | mock test analysis, classify mistakes, revise weak topics, improve accuracy and pacing | Informational: demonstrate a practical error-log method that turns an attempt into a study plan. |
+| Existing current-affairs guide | Current affairs for government exams | weekly current-affairs revision, concise notes, reliable sources, spaced revision | Informational: show a useful weekly workflow and make sources and time-sensitive facts clear. |
+
+Use one primary question as the editorial focus. Reflect it naturally in the title/H1, opening answer, and a useful subheading when appropriate. Secondary phrases should describe actual sections, not be inserted as a checklist. Do not add a `meta keywords` tag, force keyword density, make near-duplicate pages for every synonym, or promise “viral” reach.
+
+### On-page and technical controls deployed and verified on 3 October 2026
+
+- Published stories retain one stable, self-referencing canonical at `/blog.php?slug={slug}`; unknown/unpublished slugs stay HTTP 404 and `noindex`. The empty journal stays `noindex`; populated archive pages and published stories are indexable.
+- Article pages now output `BlogPosting`, `WebPage`, and visible-path-matching breadcrumb structured data from the live article, author, category, dates, tags, and validated same-site cover image. Archive pages output `CollectionPage`, an article `ItemList`, and breadcrumbs.
+- The article template emits Open Graph/Twitter image previews when an original featured cover exists. Valid publication/update dates are human-readable and aligned with article metadata; invalid legacy zero dates are omitted, and pending unpublished edits do not change public modified dates or sitemap timestamps.
+- The public journal archive uses stable `?page=N` URLs, a self-canonical per page, crawlable previous/next links, and sitemap entries for archive pages and published articles. Sitemap `lastmod` comes from the public version’s dates.
+- The admin editor now gives guidance for concise, accurate titles/descriptions, original sourced content, internal links, and relevant cover images. Published article slugs cannot be changed in place, preventing existing shared/search-result URLs from silently breaking.
+- Internal paths connect the journal to the home/catalog, relevant practice series, and related published stories. Keep anchor text descriptive and links editorially relevant.
+
+**Current limitation:** none of the four live stories currently has a featured image. Their pages remain indexable and readable, but no story-specific social image can be emitted until an administrator adds an original, relevant cover. Give uploaded covers descriptive filenames, suitable dimensions for sharing (for example, a 1200 × 630 composition), and ensure the visible article still explains the story without relying on the image.
+
+### Off-page work and measurement — not automated or claimed complete
+
+- No one can safely guarantee first place or make a page viral. Backlinks, mentions, social reach, and indexing depend on third parties and audience response; do not buy links, exchange links at scale, use link farms, or mass-publish guest posts.
+- Earn references by sharing original mock-analysis examples, clearly sourced explainers, and genuinely useful study resources with relevant educators and candidate communities. Request editorial feedback, disclose relationships, and let sites choose whether to link.
+- Claim/verify the property in Google Search Console and Bing Webmaster Tools, submit `https://fullmocktestseries.com/sitemap.php`, inspect the canonical live article with URL Inspection, and monitor actual queries, crawl errors, clicks, and impressions. Those accounts and data were not available in this workspace.
+- Recheck official recruitment notices before updating time-sensitive advice. Change visible `Updated` dates only after a substantive content review; keep author/reviewer identity and evidence visible and truthful.
+
+### Research references and observed patterns
+
+Official guidance: [Google people-first content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content), [Article structured data](https://developers.google.com/search/docs/appearance/structured-data/article), [title links](https://developers.google.com/search/docs/appearance/title-link), [sitemaps](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap), and [spam policies](https://developers.google.com/search/docs/essentials/spam-policies).
+
+Public examples checked for general editorial/navigation patterns, not copied content or proof of why a page ranks: [Adda247 government jobs hub](https://www.adda247.com/jobs/) groups official updates by task/type and points readers to primary sources; [Testbook SSC JE vacancy article](https://testbook.com/blog/ssc-je-vacancy-2025-out-branch-wise-civil-mechanical-electrical-pdf-download-detailed/) uses a specific exam/topic headline, scannable factual tables, and related-resource links; [Oliveboard blog](https://www.oliveboard.in/blog/) groups exam updates and study resources, while its [BOB LBO analysis](https://www.oliveboard.in/blog/bob-lbo-exam-analysis/) uses section-wise detail, related resources, and a named author. Borrow only these general usability principles; keep our content original, accurately sourced, and proportionate to the live catalog.

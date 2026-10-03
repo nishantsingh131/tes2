@@ -75,6 +75,27 @@ function blog_is_valid_transition(string $from, string $to): bool
     return in_array($to, $transitions[$from] ?? [], true);
 }
 
+function blog_post_pending_revision(array $post): ?array
+{
+    $revision = $post['pending_revision'] ?? null;
+    if (is_string($revision)) {
+        try {
+            $revision = json_decode($revision, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            error_log('Invalid pending blog revision for post ' . (string) ($post['id'] ?? '') . ': ' . $exception->getMessage());
+            return null;
+        }
+    }
+    return is_array($revision) && $revision !== [] ? $revision : null;
+}
+
+function blog_post_has_pending_review(array $post): bool
+{
+    if (($post['status'] ?? '') === BLOG_STATUS_PENDING_REVIEW) return true;
+    $revision = blog_post_pending_revision($post);
+    return $revision !== null && ($revision['review_state'] ?? BLOG_STATUS_PENDING_REVIEW) === BLOG_STATUS_PENDING_REVIEW;
+}
+
 function blog_read_json(string $filePath, array $fallback = []): array
 {
     if (!is_file($filePath)) {
@@ -141,10 +162,24 @@ function blog_delete_featured_image(?string $imagePath): void
     if ($root !== false && $target !== false && str_starts_with($target, $root . DIRECTORY_SEPARATOR)) @unlink($target);
 }
 
+function blog_delete_unused_featured_image(?string $imagePath, array $posts): void
+{
+    if ($imagePath === null || $imagePath === '') return;
+    foreach ($posts as $post) {
+        if ((string) ($post['featured_image'] ?? '') === $imagePath) return;
+        $revision = blog_post_pending_revision($post);
+        if ($revision !== null && (string) ($revision['featured_image'] ?? '') === $imagePath) return;
+    }
+    blog_delete_featured_image($imagePath);
+}
+
 function blog_default_categories(): array
 {
     return [
         ['id' => 'banking', 'name' => 'Banking', 'slug' => 'banking', 'description' => 'Banking exam strategy, current affairs and practice advice.'],
+        ['id' => 'bihar-police', 'name' => 'Bihar Police', 'slug' => 'bihar-police', 'description' => 'Bihar Police recruitment preparation and exam guidance.'],
+        ['id' => 'upsc', 'name' => 'UPSC', 'slug' => 'upsc', 'description' => 'UPSC Civil Services preparation, study strategy and exam insights.'],
+        ['id' => 'state-pcs', 'name' => 'State PCS', 'slug' => 'state-pcs', 'description' => 'State public service commission exam preparation and guidance.'],
         ['id' => 'ssc', 'name' => 'SSC', 'slug' => 'ssc', 'description' => 'SSC prep guidance and exam insights.'],
         ['id' => 'railway', 'name' => 'Railway', 'slug' => 'railway', 'description' => 'Railway exam updates, methods and planning.'],
         ['id' => 'bpsc', 'name' => 'BPSC', 'slug' => 'bpsc', 'description' => 'Bihar state exam planning and strategy.'],
@@ -156,6 +191,9 @@ function blog_default_tags(): array
 {
     return [
         ['id' => 'bpsc', 'name' => 'BPSC', 'slug' => 'bpsc'],
+        ['id' => 'bihar-police', 'name' => 'Bihar Police', 'slug' => 'bihar-police'],
+        ['id' => 'upsc', 'name' => 'UPSC Civil Services', 'slug' => 'upsc'],
+        ['id' => 'state-pcs', 'name' => 'State PCS', 'slug' => 'state-pcs'],
         ['id' => 'ssc', 'name' => 'SSC', 'slug' => 'ssc'],
         ['id' => 'banking', 'name' => 'Banking', 'slug' => 'banking'],
         ['id' => 'current-affairs', 'name' => 'Current Affairs', 'slug' => 'current-affairs'],
@@ -225,7 +263,7 @@ function blog_sanitize_html(string $content): string
         return in_array($tag, $allowedTags, true) ? '</' . $tag . '>' : '';
     }, $content);
 
-    $content = preg_replace_callback('/<\s*([^\s>]+)([^>]*)>/i', static function ($matches) use ($allowedTags, $allowedAttrs): string {
+    $content = preg_replace_callback('/<\s*(?!\/)([^\s>]+)([^>]*)>/i', static function ($matches) use ($allowedTags, $allowedAttrs): string {
         $tag = strtolower($matches[1]);
         if (!in_array($tag, $allowedTags, true)) {
             return '';
@@ -292,6 +330,7 @@ function blog_all_posts(): array
                         'updated_at' => (string) ($row['updated_at'] ?? ''),
                         'tags' => [],
                         'review_comment' => (string) ($row['review_comment'] ?? ''),
+                        'pending_revision' => blog_post_pending_revision(['pending_revision' => $row['pending_revision'] ?? null]),
                     ], $rows);
                 }
             } catch (Throwable $exception) {
@@ -314,7 +353,7 @@ function blog_save_posts(array $posts): void
         $pdo = db_pdo();
         if ($pdo !== null) {
             foreach ($posts as $post) {
-                $pdo->prepare('INSERT INTO blog_posts (id,title,slug,excerpt,content,status,author_id,author_name,category_id,featured_image,seo_title,seo_description,canonical_url,og_title,og_description,published_at,scheduled_at,created_at,updated_at,review_comment) VALUES (:id,:title,:slug,:excerpt,:content,:status,:author_id,:author_name,:category_id,:featured_image,:seo_title,:seo_description,:canonical_url,:og_title,:og_description,:published_at,:scheduled_at,:created_at,:updated_at,:review_comment) ON DUPLICATE KEY UPDATE title=VALUES(title),slug=VALUES(slug),excerpt=VALUES(excerpt),content=VALUES(content),status=VALUES(status),author_id=VALUES(author_id),author_name=VALUES(author_name),category_id=VALUES(category_id),featured_image=VALUES(featured_image),seo_title=VALUES(seo_title),seo_description=VALUES(seo_description),canonical_url=VALUES(canonical_url),og_title=VALUES(og_title),og_description=VALUES(og_description),published_at=VALUES(published_at),scheduled_at=VALUES(scheduled_at),updated_at=VALUES(updated_at),review_comment=VALUES(review_comment)')->execute([
+                $pdo->prepare('INSERT INTO blog_posts (id,title,slug,excerpt,content,status,author_id,author_name,category_id,featured_image,seo_title,seo_description,canonical_url,og_title,og_description,published_at,scheduled_at,created_at,updated_at,review_comment,pending_revision) VALUES (:id,:title,:slug,:excerpt,:content,:status,:author_id,:author_name,:category_id,:featured_image,:seo_title,:seo_description,:canonical_url,:og_title,:og_description,:published_at,:scheduled_at,:created_at,:updated_at,:review_comment,:pending_revision) ON DUPLICATE KEY UPDATE title=VALUES(title),slug=VALUES(slug),excerpt=VALUES(excerpt),content=VALUES(content),status=VALUES(status),author_id=VALUES(author_id),author_name=VALUES(author_name),category_id=VALUES(category_id),featured_image=VALUES(featured_image),seo_title=VALUES(seo_title),seo_description=VALUES(seo_description),canonical_url=VALUES(canonical_url),og_title=VALUES(og_title),og_description=VALUES(og_description),published_at=VALUES(published_at),scheduled_at=VALUES(scheduled_at),updated_at=VALUES(updated_at),review_comment=VALUES(review_comment),pending_revision=VALUES(pending_revision)')->execute([
                     ':id' => $post['id'] ?? bin2hex(random_bytes(8)),
                     ':title' => $post['title'] ?? '',
                     ':slug' => $post['slug'] ?? '',
@@ -335,6 +374,9 @@ function blog_save_posts(array $posts): void
                     ':created_at' => $post['created_at'] ?? date('Y-m-d H:i:s'),
                     ':updated_at' => $post['updated_at'] ?? date('Y-m-d H:i:s'),
                     ':review_comment' => $post['review_comment'] ?? '',
+                    ':pending_revision' => isset($post['pending_revision']) && is_array($post['pending_revision'])
+                        ? json_encode($post['pending_revision'], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)
+                        : null,
                 ]);
             }
             return;
@@ -573,8 +615,10 @@ function blog_public_posts(array $filters = []): array
     }
 
     usort($posts, static function (array $left, array $right): int {
-        $leftUpdated = strtotime((string) ($left['published_at'] ?? $left['created_at'] ?? date('Y-m-d H:i:s')));
-        $rightUpdated = strtotime((string) ($right['published_at'] ?? $right['created_at'] ?? date('Y-m-d H:i:s')));
+        $leftTimestamp = blog_post_timestamp(blog_post_published_at($left));
+        $rightTimestamp = blog_post_timestamp(blog_post_published_at($right));
+        $leftUpdated = $leftTimestamp === false ? 0 : $leftTimestamp;
+        $rightUpdated = $rightTimestamp === false ? 0 : $rightTimestamp;
         return $rightUpdated <=> $leftUpdated;
     });
 
@@ -584,6 +628,53 @@ function blog_public_posts(array $filters = []): array
     }
 
     return $posts;
+}
+
+function blog_pagination(array $posts, mixed $requestedPage, int $pageSize = 10): array
+{
+    $pageSize = max(1, $pageSize);
+    $totalItems = count($posts);
+    $pageCount = max(1, (int) ceil($totalItems / $pageSize));
+    $pageValue = is_string($requestedPage) ? filter_var($requestedPage, FILTER_VALIDATE_INT) : false;
+    $page = $pageValue === false || $pageValue < 1 ? 1 : min($pageValue, $pageCount);
+
+    return [
+        'page' => $page,
+        'page_count' => $pageCount,
+        'page_size' => $pageSize,
+        'total_items' => $totalItems,
+        'posts' => array_slice($posts, ($page - 1) * $pageSize, $pageSize),
+    ];
+}
+
+function blog_post_timestamp(mixed $value): int|false
+{
+    if (!is_string($value) && !is_int($value)) return false;
+    $value = trim((string) $value);
+    if ($value === '' || preg_match('/^0000-/', $value) === 1) return false;
+    return strtotime($value);
+}
+
+function blog_post_published_at(array $post): string
+{
+    foreach (['published_at', 'created_at'] as $field) {
+        $value = $post[$field] ?? null;
+        if (!is_string($value) && !is_int($value)) continue;
+        $value = trim((string) $value);
+        if (blog_post_timestamp($value) !== false) return $value;
+    }
+    return '';
+}
+
+function blog_post_public_modified_at(array $post): string
+{
+    $publishedAt = blog_post_published_at($post);
+    if (blog_post_pending_revision($post) !== null) {
+        return $publishedAt;
+    }
+    $updatedAt = $post['updated_at'] ?? null;
+    $updatedAt = is_string($updatedAt) || is_int($updatedAt) ? trim((string) $updatedAt) : '';
+    return blog_post_timestamp($updatedAt) !== false ? $updatedAt : $publishedAt;
 }
 
 function blog_post_reading_time(string $content): string

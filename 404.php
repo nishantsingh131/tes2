@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 http_response_code(404);
+header('X-Robots-Tag: noindex');
 ?>
 <!doctype html>
 <html lang="en">

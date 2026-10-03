@@ -17,7 +17,7 @@ exit;
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>RankSetu — Test Series for Government Exams</title>
+<title>Government Exam Mock Tests and Test Series | RankSetu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -1048,6 +1048,7 @@ exit;
         <h4>Company</h4>
         <ul>
           <li><a href="info.php?page=about">About us</a></li>
+          <li><a href="director.php">Director</a></li>
           <li><a href="info.php?page=contact">Contact us</a></li>
           <li><a href="blog.php">Blog</a></li>
           <li><a href="index.php#faq">Careers</a></li>
@@ -1101,7 +1102,7 @@ fetch('series-api.php')
       description.textContent = item.description;
       const meta = document.createElement('div');
       meta.className = 'card-meta';
-      meta.textContent = '10 questions · Admin published';
+      meta.textContent = 'Admin-published practice';
       const footer = document.createElement('div');
       footer.className = 'card-foot';
       const price = document.createElement('span');

@@ -3,12 +3,12 @@
 require __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 
 $catalog = [];
-foreach (published_banking_catalog() as $seriesSlug => $series) {
+foreach (available_course_catalog() as $seriesSlug => $series) {
     $catalog[$seriesSlug] = [$series['title'], $series['stage'], $series['description'], '10-question starter test', '10 minutes', (int) ($series['price_paise'] ?? 25000), $series['image_path'] ?? null];
 }
 
 foreach (series_records() as $record) {
-    if (!empty($record['active']) && isset($record['slug'], $record['title'])) {
+    if (!empty($record['active']) && isset($record['slug'], $record['title']) && isset(available_course_catalog()[$record['slug']])) {
         $catalog[$record['slug']] = [
             $record['title'],
             $record['stage'] ?? 'Practice',
@@ -21,34 +21,44 @@ foreach (series_records() as $record) {
     }
 }
 
-$slug = (string) ($_GET['product'] ?? $_POST['product'] ?? 'sbi-po');
-if (!isset($catalog[$slug])) {
-    header('Location: index.php#exams', true, 302);
-    exit;
-}
-if (preg_match('/^(test|demo|sample|untitled)$/i', trim((string) ($catalog[$slug][0] ?? ''))) === 1) {
-    header('Location: index.php#exams', true, 302);
+$slugValue = $_GET['product'] ?? $_POST['product'] ?? '';
+$slug = is_string($slugValue) ? $slugValue : '';
+if (!isset($catalog[$slug]) || preg_match('/^(test|demo|sample|untitled)$/i', trim((string) ($catalog[$slug][0] ?? ''))) === 1) {
+    http_response_code(404);
+    require __DIR__ . DIRECTORY_SEPARATOR . '404.php';
     exit;
 }
 
 $user = current_user();
 $entitlement = course_entitlement($user, $slug);
+$pricePaise = max(0, (int) ($catalog[$slug][5] ?? 0));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'enroll') {
     if ($user === null) {
         header('Location: auth.php?next=' . rawurlencode('product.php?product=' . $slug));
         exit;
     }
+    if ($entitlement['source'] === 'owned') {
+        header('Location: practice.php?product=' . rawurlencode($slug));
+        exit;
+    }
     if ($entitlement['source'] === 'subscription') {
         enroll_user_in_course($user, $slug, 'subscription', (string) ($entitlement['subscription_id'] ?? ''));
-    } else {
+    } elseif ($pricePaise === 0) {
         enroll_user_in_course($user, $slug, 'free');
+    } elseif ($entitlement['source'] === 'paid') {
+        header('Location: checkout.php?plan=' . rawurlencode($slug));
+        exit;
+    } else {
+        header('Location: product.php?product=' . rawurlencode($slug) . '&access=restricted');
+        exit;
     }
     header('Location: product.php?product=' . rawurlencode($slug) . '&enrolled=1');
     exit;
 }
 
 [$title, $stage, $description, $tests, $duration, $pricePaise, $imagePath] = $catalog[$slug];
+$searchAliases = site_exam_search_aliases(['title' => (string) $title]);
 $availableTests = [];
 foreach (test_records($slug) as $testKey => $test) {
     $questions = $test['questions'] ?? [];
@@ -72,7 +82,7 @@ $justEnrolled = ($_GET['enrolled'] ?? '') === '1';
 </head>
 <body>
     <header>
-        <a class="brand" href="test-series-landing.html">RankSetu</a>
+        <a class="brand" href="index.php">RankSetu</a>
         <nav class="nav">
             <?php if ($user !== null): ?><span class="user"><?= e((string) $user['name']) ?></span><?php endif; ?>
             <a href="student.php">Dashboard</a>
@@ -81,32 +91,36 @@ $justEnrolled = ($_GET['enrolled'] ?? '') === '1';
         </nav>
     </header>
     <main class="wrap">
-        <a class="crumb" href="banking-test-series.php">&larr; All banking test series</a>
+        <a class="crumb" href="index.php">&larr; All government exam series</a>
         <section class="hero">
             <div class="intro">
                 <img src="<?= e($imagePath ?: 'assets/exam-card.svg') ?>" alt="<?= e($title) ?> practice overview" style="width:100%;max-height:220px;object-fit:cover;margin-bottom:20px">
                 <div class="kicker"><?= e($stage) ?></div>
                 <h1><?= e($title) ?> Mock Test Series</h1>
                 <p><?= e($description) ?></p>
+                <?php if ($searchAliases !== []): ?><p class="series-note">For Bank PO preparation, this page lists the published <?= e($stage) ?> practice tests with their question counts and time limits.</p><?php endif; ?>
                 <a class="btn secondary" href="<?= $user === null ? 'auth.php?next=' . e(rawurlencode('product.php?product=' . $slug)) : 'student.php' ?>"><?= $user === null ? 'Sign in to track progress' : 'View my learning' ?></a>
             </div>
             <aside class="summary">
                 <h2>Start preparing today</h2>
                 <p><?= e($tests) ?> &bull; <?= e($duration) ?></p>
-                <div class="price"><?= $entitlement['eligible'] && $entitlement['source'] === 'subscription' ? '₹0' : '₹' . number_format($pricePaise / 100, 2) ?></div>
+                <div class="price"><?= $entitlement['eligible'] || $pricePaise === 0 ? '₹0' : '₹' . number_format($pricePaise / 100, 2) ?></div>
                 <?php if ($entitlement['source'] === 'subscription' && !$isEnrolled): ?><p style="color:#e0b34f;font-weight:700">You are a premium user. Included with your active subscription.</p><?php endif; ?>
                 <?php if ($isEnrolled): ?>
                     <a class="btn secondary" href="practice.php?product=<?= e($slug) ?>">Start practice</a>
                 <?php elseif ($user === null): ?>
                     <a class="btn" href="auth.php?next=<?= e(rawurlencode('product.php?product=' . $slug)) ?>">Sign in to enroll</a>
-                <?php else: ?>
+                <?php elseif ($entitlement['source'] === 'subscription' || $pricePaise === 0): ?>
                     <form method="post">
                         <input type="hidden" name="product" value="<?= e($slug) ?>">
                         <input type="hidden" name="action" value="enroll">
-                        <button class="btn" type="submit"><?= $entitlement['source'] === 'subscription' ? 'Enroll free' : 'Enroll in this series' ?></button>
+                        <button class="btn" type="submit">Enroll free</button>
                     </form>
+                <?php elseif ($entitlement['source'] === 'paid'): ?>
+                    <a class="btn" href="checkout.php?plan=<?= e($slug) ?>">Continue to checkout</a>
+                <?php else: ?>
+                    <p style="color:#e0b34f;font-weight:700">Course access is currently unavailable. Contact support for help.</p>
                 <?php endif; ?>
-                <?php if ($entitlement['source'] === 'subscription'): ?><p style="color:#e0b34f;font-weight:700;text-align:center;margin-top:12px">Premium access: no payment required</p><?php elseif ($entitlement['source'] === 'owned'): ?><p style="color:#286447;font-weight:700;text-align:center;margin-top:12px">Already enrolled: no payment required</p><?php elseif ($user !== null): ?><a class="btn" href="checkout.php?plan=<?= e($slug) ?>">Continue to checkout</a><?php endif; ?>
             </aside>
         </section>
 
